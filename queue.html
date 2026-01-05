@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .queue-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+            gap: 12px;
+            overflow-x: auto;
+            border: 3px solid rgba(59, 130, 246, 0.5);
+            border-radius: 16px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(15, 23, 42, 0.4) 10%, rgba(15, 23, 42, 0.4) 90%, rgba(34, 197, 94, 0.1) 100%);
+            min-height: 120px;
+            position: relative;
+        }
+
+        .queue-item {
+            min-width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translateX(50px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+        }
+
+        .enqueue-animation {
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .dequeue-animation {
+            animation: slideOut 0.4s ease-in forwards;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 5px rgba(250, 204, 21, 0.6);
+            }
+        }
+
+        .peek-highlight {
+            animation: pulse 1s ease-in-out;
+            border: 3px solid #fbbf24;
+        }
+
+        .console-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .console-line {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+        }
+
+        .btn-enqueue {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-dequeue {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-peek {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .label {
+            position: absolute;
+            bottom: -28px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .front-label {
+            left: 10px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .rear-label {
+            right: 10px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div class="container mx-auto p-6 max-w-5xl">
+        <header class="mb-8">
+            <a href="home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-blue-400 transition mb-4 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl shadow-lg shadow-blue-500/30">
+                    🚶</div>
+                <div>
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        Queue</h1>
+                    <p class="text-slate-400 text-sm">First In, First Out (FIFO) • O(1) enqueue/dequeue</p>
+                </div>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-5">
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Operations
+                    </h2>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="queueInput" placeholder="Enter value..." maxlength="8"
+                            class="flex-1 bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition"
+                            onkeypress="if(event.key==='Enter') enqueue()">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="enqueue()"
+                            class="btn-enqueue py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]">Enqueue</button>
+                        <button onclick="dequeue()"
+                            class="btn-dequeue py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]">Dequeue</button>
+                        <button onclick="peekFront()"
+                            class="btn-peek py-3 rounded-xl font-semibold transition-all hover:scale-[1.02]">Peek</button>
+                        <button onclick="clearQueue()"
+                            class="btn-secondary py-3 rounded-xl font-semibold transition-all hover:bg-slate-600">Clear</button>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-slate-700/50 grid grid-cols-2 gap-4 text-sm">
+                        <div class="flex justify-between"><span class="text-slate-400">Size:</span><span id="sizeBadge"
+                                class="text-blue-400 font-mono font-bold">0</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Max:</span><span
+                                class="text-slate-500 font-mono">8</span></div>
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-3 flex items-center gap-2"><span
+                            class="text-green-400">›_</span> Console</h2>
+                    <div id="consoleOutput"
+                        class="console-box h-52 overflow-y-auto p-3 rounded-xl text-xs text-green-400 font-mono"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-8">
+                <div class="glass-card rounded-2xl p-8 min-h-[400px] flex flex-col justify-center">
+                    <div class="text-center mb-4 text-slate-500 text-sm flex justify-between px-4">
+                        <span class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-blue-500"></span> Front
+                            (Dequeue)</span>
+                        <span class="flex items-center gap-2">Rear (Enqueue) <span
+                                class="w-3 h-3 rounded bg-green-500"></span></span>
+                    </div>
+                    <div id="queueContainer" class="queue-container">
+                        <div class="text-slate-500 text-center w-full">Queue is empty</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const MAX_SIZE = 8, queueContainer = document.getElementById('queueContainer'), inputField = document.getElementById('queueInput');
+        const sizeBadge = document.getElementById('sizeBadge'), consoleOutput = document.getElementById('consoleOutput');
+        const gradients = ['linear-gradient(135deg, #3b82f6, #2563eb)', 'linear-gradient(135deg, #6366f1, #4f46e5)', 'linear-gradient(135deg, #8b5cf6, #7c3aed)', 'linear-gradient(135deg, #a855f7, #9333ea)', 'linear-gradient(135deg, #d946ef, #c026d3)', 'linear-gradient(135deg, #ec4899, #db2777)', 'linear-gradient(135deg, #f43f5e, #e11d48)', 'linear-gradient(135deg, #22c55e, #16a34a)'];
+        let colorIndex = 0;
+
+        function log(msg, type = 'info') {
+            const line = document.createElement('div'); line.className = 'console-line';
+            if (type === 'error') line.classList.add('text-red-400');
+            else if (type === 'success') line.classList.add('text-blue-300');
+            else if (type === 'warn') line.classList.add('text-yellow-300');
+            line.innerText = `› ${msg}`;
+            consoleOutput.appendChild(line); consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function updateSize() { const size = queueContainer.querySelectorAll('.queue-item').length; sizeBadge.innerText = size; return size; }
+
+        function render() {
+            const items = queueContainer.querySelectorAll('.queue-item');
+            if (items.length === 0) { queueContainer.innerHTML = '<div class="text-slate-500 text-center w-full">Queue is empty</div>'; }
+        }
+
+        function enqueue() {
+            const value = inputField.value.trim();
+            const currentSize = queueContainer.querySelectorAll('.queue-item').length;
+            if (currentSize >= MAX_SIZE) { log('Queue Overflow!', 'error'); return; }
+            if (!value) { log('Enter a value', 'warn'); inputField.focus(); return; }
+            if (currentSize === 0) queueContainer.innerHTML = '';
+            const item = document.createElement('div'); item.classList.add('queue-item', 'enqueue-animation');
+            item.style.background = gradients[colorIndex % gradients.length]; colorIndex++;
+            item.innerText = value;
+            queueContainer.appendChild(item);
+            log(`Enqueue("${value}")`, 'success');
+            inputField.value = ''; inputField.focus(); updateSize();
+        }
+
+        function dequeue() {
+            const items = queueContainer.querySelectorAll('.queue-item');
+            if (items.length === 0) { log('Queue Underflow!', 'error'); return; }
+            const frontItem = items[0], value = frontItem.innerText;
+            frontItem.classList.add('dequeue-animation');
+            log(`Dequeue() → "${value}"`, 'warn');
+            setTimeout(() => { frontItem.remove(); updateSize(); render(); }, 400);
+        }
+
+        function peekFront() {
+            const items = queueContainer.querySelectorAll('.queue-item');
+            if (items.length === 0) { log('Queue is empty', 'info'); return; }
+            const frontItem = items[0];
+            frontItem.classList.remove('peek-highlight'); void frontItem.offsetWidth; frontItem.classList.add('peek-highlight');
+            log(`Peek() → "${frontItem.innerText}"`, 'info');
+        }
+
+        function clearQueue() {
+            const items = queueContainer.querySelectorAll('.queue-item');
+            if (items.length === 0) return;
+            items.forEach((item, i) => { setTimeout(() => { item.classList.add('dequeue-animation'); setTimeout(() => item.remove(), 400); }, i * 80); });
+            log('Queue cleared', 'warn');
+            setTimeout(() => { updateSize(); render(); }, items.length * 80 + 400);
+        }
+
+        updateSize();
+    </script>
+</body>
+
+</html>

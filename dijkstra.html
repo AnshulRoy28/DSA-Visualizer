@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijkstra's Algorithm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            border: 3px solid #2dd4bf;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            position: absolute;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+        }
+
+        .node .dist {
+            position: absolute;
+            top: -22px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+            border: 1px solid #334155;
+        }
+
+        .node.visited {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .node.current {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: #f87171;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .node.complete {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-color: #4ade80;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .node.start {
+            box-shadow: 0 0 25px rgba(20, 184, 166, 0.6);
+        }
+
+        .edge {
+            stroke: #475569;
+            stroke-width: 3;
+        }
+
+        .edge.visited {
+            stroke: #22c55e;
+            stroke-width: 4;
+        }
+
+        .edge-label {
+            fill: #94a3b8;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .console-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .pq-item {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .dist-cell {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+            cursor: pointer;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-ready {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .status-running {
+            background: rgba(20, 184, 166, 0.2);
+            color: #5eead4;
+        }
+
+        .status-complete {
+            background: rgba(20, 184, 166, 0.2);
+            color: #99f6e4;
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div class="container mx-auto p-6 max-w-6xl">
+        <header class="mb-8">
+            <a href="home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition mb-4 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg shadow-teal-500/30">
+                    🛤️</div>
+                <div>
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
+                        Dijkstra's Algorithm</h1>
+                    <p class="text-slate-400 text-sm">Shortest path for weighted graphs • O(E log V)</p>
+                </div>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-3 space-y-4">
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-4">Controls</h2>
+                    <div class="space-y-4">
+                        <div><label class="text-xs text-slate-400 uppercase">Source Node</label><select id="sourceNode"
+                                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 mt-2 text-white focus:outline-none focus:border-teal-500"></select>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-2"><span
+                                    class="text-slate-400">Speed</span><span id="speedValue"
+                                    class="text-teal-400 font-mono">Medium</span></div><input type="range"
+                                id="speedSlider" min="500" max="2000" value="1000"
+                                class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                                style="direction:rtl">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <button onclick="resetGraph()"
+                                class="btn-secondary py-2.5 rounded-xl font-semibold text-sm">Reset</button>
+                            <button onclick="runDijkstra()"
+                                class="btn-primary py-2.5 rounded-xl font-semibold text-sm">▶ Start</button>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between"><span
+                            class="text-slate-400 text-sm">Status</span><span id="statusBadge"
+                            class="status-badge status-ready">Ready</span></div>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Priority Queue</h3>
+                    <div id="pqContainer" class="flex flex-wrap min-h-[40px]"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <h2 class="font-semibold mb-2 text-sm"><span class="text-green-400">›_</span> Console</h2>
+                    <div id="consoleOutput"
+                        class="console-box h-28 overflow-y-auto p-2 rounded-xl text-xs text-green-400 font-mono"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Distances</h3>
+                    <div id="distTable" class="grid grid-cols-3 gap-2"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-9">
+                <div class="glass-card rounded-2xl p-6 min-h-[500px] relative">
+                    <svg id="edgeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
+                    <div id="graphContainer" class="relative w-full h-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const graph = { A: { B: 4, C: 2 }, B: { A: 4, C: 1, D: 5 }, C: { A: 2, B: 1, D: 8, E: 10 }, D: { B: 5, C: 8, E: 2, F: 6 }, E: { C: 10, D: 2, F: 3 }, F: { D: 6, E: 3 } };
+        const positions = { A: [100, 100], B: [250, 60], C: [250, 180], D: [400, 120], E: [400, 240], F: [520, 180] };
+        const graphCont = document.getElementById('graphContainer'), edgeCanvas = document.getElementById('edgeCanvas');
+        const consoleOutput = document.getElementById('consoleOutput'), pqCont = document.getElementById('pqContainer');
+        const distTable = document.getElementById('distTable'), statusBadge = document.getElementById('statusBadge');
+        const sourceSelect = document.getElementById('sourceNode'), speedSlider = document.getElementById('speedSlider'), speedValue = document.getElementById('speedValue');
+        let nodes = {}, dist = {}, isRunning = false, speed = 1000;
+
+        speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 800 ? 'Fast' : speed < 1400 ? 'Medium' : 'Slow'; });
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'py-1'; if (type === 'success') l.classList.add('text-blue-300'); if (type === 'update') l.classList.add('text-yellow-300'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
+        function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Running' ? 'status-running' : 'status-complete'); statusBadge.textContent = s === 'Running' ? 'Running...' : s; }
+
+        function initGraph() {
+            graphCont.innerHTML = ''; edgeCanvas.innerHTML = ''; sourceSelect.innerHTML = '';
+            Object.keys(graph).forEach(id => { sourceSelect.innerHTML += `<option value="${id}">${id}</option>`; const [x, y] = positions[id]; const node = document.createElement('div'); node.className = 'node'; node.id = `node-${id}`; node.style.left = `${x}px`; node.style.top = `${y}px`; node.innerHTML = `<span class="dist" id="dist-${id}">∞</span>${id}`; graphCont.appendChild(node); nodes[id] = node; });
+            const drawn = new Set();
+            Object.entries(graph).forEach(([from, neighbors]) => { Object.entries(neighbors).forEach(([to, weight]) => { const key = [from, to].sort().join('-'); if (!drawn.has(key)) { drawn.add(key); const [x1, y1] = positions[from], [x2, y2] = positions[to]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1 + 25); line.setAttribute('y1', y1 + 25); line.setAttribute('x2', x2 + 25); line.setAttribute('y2', y2 + 25); line.setAttribute('class', 'edge'); line.id = `edge-${key}`; edgeCanvas.appendChild(line); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', (x1 + x2) / 2 + 25); text.setAttribute('y', (y1 + y2) / 2 + 25); text.setAttribute('class', 'edge-label'); text.setAttribute('text-anchor', 'middle'); text.textContent = weight; edgeCanvas.appendChild(text); } }); });
+        }
+
+        function resetGraph() { if (isRunning) return; Object.values(nodes).forEach(n => { n.className = 'node'; n.querySelector('.dist').innerText = '∞'; }); document.querySelectorAll('.edge').forEach(e => e.classList.remove('visited')); pqCont.innerHTML = ''; consoleOutput.innerHTML = ''; distTable.innerHTML = ''; setStatus('Ready'); }
+        function updateDistTable() { distTable.innerHTML = Object.entries(dist).map(([n, d]) => `<div class="dist-cell"><div class="font-bold">${n}</div><div class="text-yellow-400">${d === Infinity ? '∞' : d}</div></div>`).join(''); }
+
+        async function runDijkstra() {
+            if (isRunning) return; isRunning = true; resetGraph(); setStatus('Running');
+            const source = sourceSelect.value; nodes[source].classList.add('start');
+            dist = {}; const visited = new Set();
+            Object.keys(graph).forEach(n => dist[n] = Infinity); dist[source] = 0;
+            document.getElementById(`dist-${source}`).innerText = '0'; updateDistTable();
+            const pq = [[0, source]]; log(`Starting from ${source}`);
+            while (pq.length > 0) {
+                pq.sort((a, b) => a[0] - b[0]); pqCont.innerHTML = pq.map(([d, n]) => `<span class="pq-item">${n}:${d}</span>`).join('');
+                const [d, u] = pq.shift(); if (visited.has(u)) continue; visited.add(u);
+                nodes[u].classList.add('current'); log(`Processing ${u} (dist=${d})`, 'update'); await sleep(speed);
+                for (const [v, weight] of Object.entries(graph[u])) { if (!visited.has(v)) { const newDist = dist[u] + weight; if (newDist < dist[v]) { dist[v] = newDist; pq.push([newDist, v]); document.getElementById(`dist-${v}`).innerText = newDist; log(`Update: dist[${v}] = ${newDist}`); const edgeKey = [u, v].sort().join('-'); document.getElementById(`edge-${edgeKey}`)?.classList.add('visited'); nodes[v].classList.add('visited'); updateDistTable(); } } }
+                await sleep(speed / 2); nodes[u].classList.remove('current'); nodes[u].classList.add('complete');
+            }
+            pqCont.innerHTML = '<span class="text-slate-500 text-sm">empty</span>'; log('Dijkstra complete!', 'success'); setStatus('Complete'); isRunning = false;
+        }
+
+        initGraph();
+    </script>
+</body>
+
+</html>

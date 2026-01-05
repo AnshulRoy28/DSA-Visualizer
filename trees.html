@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Tree Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .tree-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: 3px solid #4ade80;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            position: absolute;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .tree-node.highlight {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #fbbf24;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .tree-node.visited {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-color: #a78bfa;
+        }
+
+        .tree-edge {
+            stroke: #4ade80;
+            stroke-width: 3;
+        }
+
+        .console-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .traversal-item {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin: 3px;
+            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-traversal {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+            cursor: pointer;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-ready {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .status-running {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+        }
+
+        .status-complete {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div class="container mx-auto p-6 max-w-6xl">
+        <header class="mb-8">
+            <a href="home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-green-400 transition mb-4 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-2xl shadow-lg shadow-green-500/30">
+                    🌲</div>
+                <div>
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                        Binary Search Tree</h1>
+                    <p class="text-slate-400 text-sm">Hierarchical data structure • O(log n) operations</p>
+                </div>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-3 space-y-4">
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-4">Operations</h2>
+                    <input type="number" id="nodeInput" placeholder="Enter value..."
+                        class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 mb-4 text-white focus:outline-none focus:border-green-500"
+                        onkeypress="if(event.key==='Enter') insertNode()">
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <button onclick="insertNode()"
+                            class="btn-primary py-2.5 rounded-xl font-semibold text-sm">Insert</button>
+                        <button onclick="searchNode()"
+                            class="bg-gradient-to-r from-amber-500 to-orange-500 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-amber-500/30">Search</button>
+                    </div>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Speed</span><span
+                                id="speedValue" class="text-green-400 font-mono">Medium</span></div><input type="range"
+                            id="speedSlider" min="200" max="1000" value="500"
+                            class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                            style="direction:rtl">
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-400 mb-2 mt-4">Traversals</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="traverse('inorder')"
+                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Inorder</button>
+                        <button onclick="traverse('preorder')"
+                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Preorder</button>
+                        <button onclick="traverse('postorder')"
+                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Postorder</button>
+                        <button onclick="traverse('levelorder')"
+                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Level</button>
+                    </div>
+                    <button onclick="clearTree()"
+                        class="w-full btn-secondary py-2.5 rounded-xl font-semibold text-sm mt-4">Clear</button>
+                    <div class="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between"><span
+                            class="text-slate-400 text-sm">Status</span><span id="statusBadge"
+                            class="status-badge status-ready">Ready</span></div>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Traversal Result</h3>
+                    <div id="traversalResult" class="flex flex-wrap min-h-[40px]"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <h2 class="font-semibold mb-2 text-sm"><span class="text-green-400">›_</span> Console</h2>
+                    <div id="consoleOutput"
+                        class="console-box h-28 overflow-y-auto p-2 rounded-xl text-xs text-green-400 font-mono"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-9">
+                <div class="glass-card rounded-2xl p-6 min-h-[550px] relative overflow-auto">
+                    <svg id="edgeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
+                    <div id="treeContainer" class="relative w-full min-w-[600px]" style="height: 500px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        class TreeNode { constructor(val) { this.val = val; this.left = null; this.right = null; } }
+        class BST { constructor() { this.root = null; } insert(val) { const newNode = new TreeNode(val); if (!this.root) { this.root = newNode; return; } let curr = this.root; while (true) { if (val < curr.val) { if (!curr.left) { curr.left = newNode; break; } curr = curr.left; } else { if (!curr.right) { curr.right = newNode; break; } curr = curr.right; } } } search(val) { let curr = this.root; while (curr) { if (val === curr.val) return curr; curr = val < curr.val ? curr.left : curr.right; } return null; } }
+
+        const bst = new BST(), treeCont = document.getElementById('treeContainer'), edgeCanvas = document.getElementById('edgeCanvas');
+        const consoleOutput = document.getElementById('consoleOutput'), traversalResult = document.getElementById('traversalResult');
+        const statusBadge = document.getElementById('statusBadge'), speedSlider = document.getElementById('speedSlider'), speedValue = document.getElementById('speedValue');
+        let nodeElements = {}, isRunning = false, speed = 500;
+
+        speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 350 ? 'Fast' : speed < 700 ? 'Medium' : 'Slow'; });
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'py-1'; if (type === 'success') l.classList.add('text-blue-300'); if (type === 'error') l.classList.add('text-red-400'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
+        function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Running' ? 'status-running' : 'status-complete'); statusBadge.textContent = s === 'Running' ? 'Running...' : s; }
+
+        function render() {
+            treeCont.innerHTML = ''; edgeCanvas.innerHTML = ''; nodeElements = {};
+            if (!bst.root) { treeCont.innerHTML = '<p class="text-slate-500 text-center pt-20">Tree is empty - Insert nodes!</p>'; return; }
+            const positions = {};
+            function calcPos(node, x, y, dx) { if (!node) return; positions[node.val] = { x, y }; calcPos(node.left, x - dx, y + 80, dx / 1.8); calcPos(node.right, x + dx, y + 80, dx / 1.8); }
+            calcPos(bst.root, treeCont.offsetWidth / 2, 40, 120);
+            function drawEdges(node) { if (!node) return; const p = positions[node.val]; if (node.left) { const c = positions[node.left.val]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.x); line.setAttribute('y1', p.y + 25); line.setAttribute('x2', c.x); line.setAttribute('y2', c.y - 25); line.setAttribute('class', 'tree-edge'); edgeCanvas.appendChild(line); drawEdges(node.left); } if (node.right) { const c = positions[node.right.val]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.x); line.setAttribute('y1', p.y + 25); line.setAttribute('x2', c.x); line.setAttribute('y2', c.y - 25); line.setAttribute('class', 'tree-edge'); edgeCanvas.appendChild(line); drawEdges(node.right); } } drawEdges(bst.root);
+            function drawNodes(node) { if (!node) return; const p = positions[node.val]; const el = document.createElement('div'); el.className = 'tree-node'; el.style.left = `${p.x - 25}px`; el.style.top = `${p.y - 25}px`; el.innerText = node.val; el.id = `node-${node.val}`; treeCont.appendChild(el); nodeElements[node.val] = el; drawNodes(node.left); drawNodes(node.right); } drawNodes(bst.root);
+        }
+
+        function insertNode() { if (isRunning) return; const val = parseInt(document.getElementById('nodeInput').value); if (isNaN(val)) { log('Enter valid number', 'error'); return; } bst.insert(val); log(`Inserted ${val}`, 'success'); document.getElementById('nodeInput').value = ''; render(); }
+        async function searchNode() { if (isRunning) return; const val = parseInt(document.getElementById('nodeInput').value); if (isNaN(val)) { log('Enter value to search', 'error'); return; } isRunning = true; setStatus('Running'); log(`Searching for ${val}...`); let curr = bst.root; while (curr) { nodeElements[curr.val]?.classList.add('highlight'); await sleep(speed); if (val === curr.val) { log(`Found ${val}!`, 'success'); setTimeout(() => { nodeElements[curr.val]?.classList.remove('highlight'); }, 2000); isRunning = false; setStatus('Complete'); return; } nodeElements[curr.val]?.classList.remove('highlight'); nodeElements[curr.val]?.classList.add('visited'); curr = val < curr.val ? curr.left : curr.right; } log(`${val} not found`, 'error'); isRunning = false; setStatus('Complete'); setTimeout(() => Object.values(nodeElements).forEach(e => e.classList.remove('visited')), 1500); }
+        async function traverse(type) { if (isRunning) return; isRunning = true; setStatus('Running'); traversalResult.innerHTML = ''; log(`${type} traversal`); const result = []; if (type === 'inorder') await inorder(bst.root, result); else if (type === 'preorder') await preorder(bst.root, result); else if (type === 'postorder') await postorder(bst.root, result); else await levelorder(result); log(`Result: [${result.join(', ')}]`, 'success'); isRunning = false; setStatus('Complete'); setTimeout(() => Object.values(nodeElements).forEach(e => e.classList.remove('highlight', 'visited')), 1500); }
+        async function inorder(node, result) { if (!node) return; await inorder(node.left, result); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); await inorder(node.right, result); }
+        async function preorder(node, result) { if (!node) return; nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); await preorder(node.left, result); await preorder(node.right, result); }
+        async function postorder(node, result) { if (!node) return; await postorder(node.left, result); await postorder(node.right, result); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); }
+        async function levelorder(result) { if (!bst.root) return; const queue = [bst.root]; while (queue.length) { const node = queue.shift(); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); if (node.left) queue.push(node.left); if (node.right) queue.push(node.right); } }
+        function clearTree() { bst.root = null; log('Tree cleared'); render(); traversalResult.innerHTML = ''; }
+
+        [50, 30, 70, 20, 40, 60, 80].forEach(v => bst.insert(v)); render();
+    </script>
+</body>
+
+</html>

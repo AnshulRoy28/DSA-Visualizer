@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .array-container {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 20px;
+            min-height: 220px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+        }
+
+        .bar {
+            width: 38px;
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bar span {
+            position: absolute;
+            bottom: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .bar.merging {
+            box-shadow: 0 0 25px currentColor;
+            transform: scaleY(1.02);
+        }
+
+        .bar.sorted {
+            background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%) !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Division color palette - distinct colors for each level */
+        .division-0 {
+            background: linear-gradient(180deg, #a78bfa 0%, #8b5cf6 100%);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .division-1-left {
+            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .division-1-right {
+            background: linear-gradient(180deg, #f472b6 0%, #ec4899 100%);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+        }
+
+        .division-2-0 {
+            background: linear-gradient(180deg, #2dd4bf 0%, #14b8a6 100%);
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.3);
+        }
+
+        .division-2-1 {
+            background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 100%);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .division-2-2 {
+            background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.3);
+        }
+
+        .division-2-3 {
+            background: linear-gradient(180deg, #c084fc 0%, #a855f7 100%);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .console-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .console-line {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(71, 85, 105, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.8);
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.5);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-ready {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        .status-sorting {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-complete {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .depth-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div class="container mx-auto p-6 max-w-6xl">
+        <header class="mb-8">
+            <a href="home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-purple-400 transition mb-4 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
+                    🔀</div>
+                <div>
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Merge Sort</h1>
+                    <p class="text-slate-400 text-sm">Divide and conquer • O(n log n) time complexity</p>
+                </div>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-3 space-y-5">
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Controls
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Array
+                                    Size</span><span id="sizeValue" class="text-purple-400 font-mono">10</span></div>
+                            <input type="range" id="sizeSlider" min="4" max="12" value="10"
+                                class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-2"><span
+                                    class="text-slate-400">Speed</span><span id="speedValue"
+                                    class="text-pink-400 font-mono">Medium</span></div>
+                            <input type="range" id="speedSlider" min="100" max="800" value="400"
+                                class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                                style="direction:rtl">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <button onclick="generateArray()" id="genBtn"
+                                class="btn-secondary py-2.5 rounded-xl font-semibold text-sm">Reset</button>
+                            <button onclick="startMergeSort()" id="sortBtn"
+                                class="btn-primary py-2.5 rounded-xl font-semibold text-sm">▶ Start</button>
+                        </div>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-slate-700/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-slate-400 text-sm">Status</span>
+                            <span id="statusBadge" class="status-badge status-ready">Ready</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 text-sm">Depth</span>
+                            <span id="depthBadge" class="text-purple-400 font-mono font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Division Legend -->
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-sm font-semibold mb-3 text-slate-400">Division Color Legend</h2>
+                    <div class="space-y-2 text-xs">
+                        <div class="depth-indicator bg-slate-800/50">
+                            <div class="legend-color division-0"></div><span>Original Array</span>
+                        </div>
+                        <div class="depth-indicator bg-slate-800/50">
+                            <div class="legend-color division-1-left"></div><span>Left Half</span>
+                        </div>
+                        <div class="depth-indicator bg-slate-800/50">
+                            <div class="legend-color division-1-right"></div><span>Right Half</span>
+                        </div>
+                        <div class="depth-indicator bg-slate-800/50">
+                            <div class="legend-color" style="background:#22c55e"></div><span>Sorted/Merged</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-5">
+                    <h2 class="text-lg font-semibold mb-3 flex items-center gap-2"><span
+                            class="text-green-400">›_</span> Console</h2>
+                    <div id="consoleOutput"
+                        class="console-box h-40 overflow-y-auto p-3 rounded-xl text-xs text-green-400 font-mono"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-9 space-y-4">
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Current State</h3>
+                    <div id="arrayContainer" class="array-container"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Division Tree</h3>
+                    <div id="divisionTree" class="min-h-[200px] overflow-x-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('arrayContainer'), consoleOutput = document.getElementById('consoleOutput');
+        const divisionTree = document.getElementById('divisionTree');
+        const sizeSlider = document.getElementById('sizeSlider'), speedSlider = document.getElementById('speedSlider');
+        const statusBadge = document.getElementById('statusBadge'), depthBadge = document.getElementById('depthBadge');
+        const sizeValue = document.getElementById('sizeValue'), speedValue = document.getElementById('speedValue');
+        let array = [], bars = [], isSorting = false, speed = 400;
+
+        const divisionColors = [
+            'division-0',
+            ['division-1-left', 'division-1-right'],
+            ['division-2-0', 'division-2-1', 'division-2-2', 'division-2-3']
+        ];
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        sizeSlider.addEventListener('input', e => { sizeValue.textContent = e.target.value; if (!isSorting) generateArray(); });
+        speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 250 ? 'Fast' : speed < 500 ? 'Medium' : 'Slow'; });
+
+        function log(msg, type = 'info') {
+            const l = document.createElement('div');
+            l.className = 'console-line';
+            if (type === 'merge') l.classList.add('text-purple-300');
+            if (type === 'divide') l.classList.add('text-yellow-300');
+            if (type === 'complete') l.classList.add('text-green-300');
+            l.innerText = '› ' + msg;
+            consoleOutput.appendChild(l);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function setStatus(s) {
+            statusBadge.className = 'status-badge';
+            statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Sorting' ? 'status-sorting' : 'status-complete');
+            statusBadge.textContent = s === 'Sorting' ? 'Sorting...' : s;
+        }
+
+        function generateArray() {
+            if (isSorting) return;
+            container.innerHTML = ''; array = []; bars = [];
+            const size = parseInt(sizeSlider.value);
+            for (let i = 0; i < size; i++) {
+                const val = Math.floor(Math.random() * 80) + 20;
+                array.push(val);
+                const bar = document.createElement('div');
+                bar.classList.add('bar', 'division-0');
+                bar.style.height = `${val * 2}px`;
+                const label = document.createElement('span');
+                label.innerText = val;
+                bar.appendChild(label);
+                container.appendChild(bar);
+                bars.push(bar);
+            }
+            divisionTree.innerHTML = '<p class="text-slate-500 text-center py-8">Start sorting to see division tree</p>';
+            log(`Generated array (n=${size})`);
+            setStatus('Ready');
+            depthBadge.textContent = '0';
+        }
+
+        function renderDivisionTree(divisions) {
+            divisionTree.innerHTML = '';
+            divisions.forEach((level, depth) => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-center gap-4 mb-4';
+                level.forEach((segment, idx) => {
+                    const box = document.createElement('div');
+                    box.className = 'flex gap-1 p-2 rounded-lg border border-slate-700';
+                    box.style.background = 'rgba(30, 41, 59, 0.6)';
+                    segment.forEach(val => {
+                        const cell = document.createElement('div');
+                        cell.className = 'w-8 h-8 rounded flex items-center justify-center text-xs font-bold';
+                        const colorClass = depth === 0 ? 'division-0' :
+                            depth === 1 ? (idx % 2 === 0 ? 'division-1-left' : 'division-1-right') :
+                                `division-2-${idx % 4}`;
+                        cell.classList.add(colorClass);
+                        cell.innerText = val;
+                        box.appendChild(cell);
+                    });
+                    row.appendChild(box);
+                });
+                divisionTree.appendChild(row);
+            });
+        }
+
+        async function startMergeSort() {
+            if (isSorting) return;
+            isSorting = true; setStatus('Sorting');
+            document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = true;
+
+            const divisions = [[array.slice()]];
+            renderDivisionTree(divisions);
+
+            await mergeSort(0, array.length - 1, 0, divisions);
+
+            bars.forEach(b => { b.className = 'bar sorted'; });
+            log("Sort complete!", "complete");
+            setStatus('Complete');
+            isSorting = false;
+            document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = false;
+        }
+
+        async function mergeSort(l, r, depth, divisions) {
+            if (l >= r) return;
+
+            const m = Math.floor((l + r) / 2);
+            depthBadge.textContent = depth + 1;
+
+            // Color the left and right halves
+            const leftColor = depth % 2 === 0 ? 'division-1-left' : 'division-2-0';
+            const rightColor = depth % 2 === 0 ? 'division-1-right' : 'division-2-1';
+
+            for (let i = l; i <= m; i++) {
+                bars[i].className = 'bar ' + leftColor;
+            }
+            for (let i = m + 1; i <= r; i++) {
+                bars[i].className = 'bar ' + rightColor;
+            }
+
+            log(`Divide: [${l}..${m}] | [${m + 1}..${r}]`, 'divide');
+
+            // Update division tree
+            if (divisions.length <= depth + 1) divisions.push([]);
+            divisions[depth + 1].push(array.slice(l, m + 1));
+            divisions[depth + 1].push(array.slice(m + 1, r + 1));
+            renderDivisionTree(divisions);
+
+            await sleep(speed);
+
+            await mergeSort(l, m, depth + 1, divisions);
+            await mergeSort(m + 1, r, depth + 1, divisions);
+            await merge(l, m, r, depth);
+        }
+
+        async function merge(l, m, r, depth) {
+            const left = array.slice(l, m + 1), right = array.slice(m + 1, r + 1);
+            let i = 0, j = 0, k = l;
+            log(`Merge: [${l}..${r}]`, 'merge');
+
+            while (i < left.length && j < right.length) {
+                bars[k].classList.add('merging');
+                await sleep(speed);
+                if (left[i] <= right[j]) {
+                    array[k] = left[i]; i++;
+                } else {
+                    array[k] = right[j]; j++;
+                }
+                bars[k].style.height = `${array[k] * 2}px`;
+                bars[k].querySelector('span').innerText = array[k];
+                bars[k].classList.remove('merging');
+                bars[k].className = 'bar sorted';
+                k++;
+            }
+            while (i < left.length) {
+                bars[k].classList.add('merging');
+                await sleep(speed);
+                array[k] = left[i];
+                bars[k].style.height = `${array[k] * 2}px`;
+                bars[k].querySelector('span').innerText = array[k];
+                bars[k].classList.remove('merging');
+                bars[k].className = 'bar sorted';
+                i++; k++;
+            }
+            while (j < right.length) {
+                bars[k].classList.add('merging');
+                await sleep(speed);
+                array[k] = right[j];
+                bars[k].style.height = `${array[k] * 2}px`;
+                bars[k].querySelector('span').innerText = array[k];
+                bars[k].classList.remove('merging');
+                bars[k].className = 'bar sorted';
+                j++; k++;
+            }
+        }
+
+        window.addEventListener('resize', () => { if (!isSorting) generateArray(); });
+        setTimeout(generateArray, 100);
+    </script>
+</body>
+
+</html>
