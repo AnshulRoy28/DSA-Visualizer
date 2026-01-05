@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dijkstra's Algorithm</title>
+    <title>Dijkstra's Algorithm Visualizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -21,124 +23,215 @@
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .graph-container {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            height: 380px;
+            position: relative;
         }
 
         .node {
-            width: 50px;
-            height: 50px;
+            position: absolute;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #14b8a6, #0d9488);
-            border: 3px solid #2dd4bf;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 16px;
-            position: absolute;
+            font-size: 14px;
             transition: all 0.3s;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
-        }
-
-        .node .dist {
-            position: absolute;
-            top: -22px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 3px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 600;
-            border: 1px solid #334155;
-        }
-
-        .node.visited {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            border-color: #fbbf24;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
-        }
-
-        .node.current {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            border-color: #f87171;
-            box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
-            transform: scale(1.2);
             z-index: 10;
         }
 
-        .node.complete {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-color: #4ade80;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        .node-label {
+            font-size: 14px;
         }
 
-        .node.start {
-            box-shadow: 0 0 25px rgba(20, 184, 166, 0.6);
+        .node-dist {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+
+        .node-idle {
+            background: linear-gradient(135deg, #475569, #334155);
+            border: 3px solid #64748b;
+        }
+
+        .node-source {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border: 3px solid #86efac;
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.6);
+        }
+
+        .node-current {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            border: 3px solid #fca5a5;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.7);
+            transform: scale(1.1);
+        }
+
+        .node-queue {
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
+            border: 3px solid #fde68a;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        .node-relaxed {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border: 3px solid #93c5fd;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .node-done {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            border: 3px solid #86efac;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
         }
 
         .edge {
-            stroke: #475569;
-            stroke-width: 3;
+            position: absolute;
+            height: 3px;
+            background: #475569;
+            transform-origin: left center;
+            z-index: 1;
+            transition: all 0.3s;
         }
 
-        .edge.visited {
-            stroke: #22c55e;
-            stroke-width: 4;
+        .edge-weight {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #94a3b8;
+            z-index: 5;
         }
 
-        .edge-label {
-            fill: #94a3b8;
-            font-size: 13px;
+        .edge-relaxed {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+            height: 4px;
+        }
+
+        .edge-shortest {
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+            height: 5px;
+        }
+
+        .dist-table {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .dist-row {
+            display: flex;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-bottom: 2px;
+        }
+
+        .dist-row.current {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .dist-node {
+            width: 24px;
             font-weight: bold;
         }
 
-        .console-box {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(74, 222, 128, 0.2);
+        .dist-val {
+            color: #4ade80;
         }
 
-        .pq-item {
-            background: linear-gradient(135deg, #14b8a6, #0d9488);
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
+        .dist-inf {
+            color: #64748b;
+        }
+
+        .code-panel {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+
+        .code-line {
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+
+        .code-line.active {
+            background: rgba(34, 197, 94, 0.3);
+            border-left: 2px solid #22c55e;
+        }
+
+        .code-line-number {
+            color: #64748b;
+            width: 16px;
             display: inline-block;
-            margin: 2px;
+            text-align: right;
+            margin-right: 6px;
         }
 
-        .dist-cell {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 8px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #334155;
+        .btn-control {
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+        .btn-play {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
         }
 
-        .btn-secondary {
+        .btn-pause {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-step {
             background: rgba(71, 85, 105, 0.5);
             border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
+        .btn-step:disabled {
+            opacity: 0.4;
+        }
+
+        .metric {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
         .slider::-webkit-slider-thumb {
             appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+            background: linear-gradient(135deg, #22c55e, #4ade80);
             cursor: pointer;
         }
 
         .status-badge {
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
 
@@ -148,131 +241,441 @@
         }
 
         .status-running {
-            background: rgba(20, 184, 166, 0.2);
-            color: #5eead4;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .status-paused {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
         }
 
         .status-complete {
-            background: rgba(20, 184, 166, 0.2);
-            color: #99f6e4;
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
         }
     </style>
 </head>
 
 <body class="text-white">
-    <div class="container mx-auto p-6 max-w-6xl">
-        <header class="mb-8">
+    <div class="container mx-auto p-4 max-w-7xl">
+        <header class="mb-4">
             <a href="../index.html"
-                class="inline-flex items-center gap-2 text-slate-400 hover:text-teal-400 transition mb-4 text-sm">
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-green-400 transition mb-2 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Home
             </a>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg shadow-teal-500/30">
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-lg shadow-lg shadow-green-500/30">
                     🛤️</div>
                 <div>
                     <h1
-                        class="text-3xl font-bold bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
+                        class="text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                         Dijkstra's Algorithm</h1>
-                    <p class="text-slate-400 text-sm">Shortest path for weighted graphs • O(E log V)</p>
+                    <p class="text-slate-400 text-xs">Shortest Path • O((V+E) log V) • Priority Queue</p>
                 </div>
             </div>
         </header>
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-3 space-y-4">
-                <div class="glass-card rounded-2xl p-5">
-                    <h2 class="text-lg font-semibold mb-4">Controls</h2>
-                    <div class="space-y-4">
-                        <div><label class="text-xs text-slate-400 uppercase">Source Node</label><select id="sourceNode"
-                                class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 mt-2 text-white focus:outline-none focus:border-teal-500"></select>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-4 space-y-3">
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Controls</h2>
+                    <div class="mb-3">
+                        <label class="text-xs text-slate-400">Source Node</label>
+                        <select id="sourceNode"
+                            class="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-sm mt-1">
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                        </select>
+                    </div>
+                    <button onclick="resetGraph()"
+                        class="w-full bg-gradient-to-r from-slate-600 to-slate-700 py-2 rounded-lg font-semibold text-xs">Reset</button>
+                </div>
+
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Playback</h2>
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <button id="stepBackBtn" onclick="stepBack()" class="btn-control btn-step w-10 h-10" disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+                            </svg>
+                        </button>
+                        <button id="playPauseBtn" onclick="togglePlayPause()" class="btn-control btn-play w-12 h-12">
+                            <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                            <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                            </svg>
+                        </button>
+                        <button id="stepForwardBtn" onclick="stepForward()" class="btn-control btn-step w-10 h-10"
+                            disabled>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Speed</span>
+                        <span id="speedValue" class="text-green-400 font-mono">1x</span>
+                    </div>
+                    <input type="range" id="speedSlider" min="0.5" max="5" step="0.5" value="1"
+                        class="slider w-full h-2 bg-slate-700 rounded-lg">
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-700/50">
+                        <span class="text-slate-400 text-xs">Status</span>
+                        <span id="statusBadge" class="status-badge status-ready">Ready</span>
+                    </div>
+                    <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer mt-2">
+                        <input type="checkbox" id="audioToggle" class="w-3 h-3 rounded">
+                        <span>🔊 Audio</span>
+                    </label>
+                </div>
+
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Distances</h2>
+                    <div id="distTable" class="dist-table"></div>
+                </div>
+
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Algorithm</h2>
+                    <div class="code-panel bg-slate-900/50 rounded-lg p-2">
+                        <div class="code-line" data-line="1"><span class="code-line-number">1</span>dist[src] = 0</div>
+                        <div class="code-line" data-line="2"><span class="code-line-number">2</span>pq.insert(src, 0)
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-2"><span
-                                    class="text-slate-400">Speed</span><span id="speedValue"
-                                    class="text-teal-400 font-mono">Medium</span></div><input type="range"
-                                id="speedSlider" min="500" max="2000" value="1000"
-                                class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                                style="direction:rtl">
+                        <div class="code-line" data-line="3"><span class="code-line-number">3</span><span
+                                class="text-purple-400">while</span> !pq.empty():</div>
+                        <div class="code-line" data-line="4"><span class="code-line-number">4</span> u = pq.extractMin()
                         </div>
-                        <div class="grid grid-cols-2 gap-3 pt-2">
-                            <button onclick="resetGraph()"
-                                class="btn-secondary py-2.5 rounded-xl font-semibold text-sm">Reset</button>
-                            <button onclick="runDijkstra()"
-                                class="btn-primary py-2.5 rounded-xl font-semibold text-sm">▶ Start</button>
+                        <div class="code-line" data-line="5"><span class="code-line-number">5</span> <span
+                                class="text-purple-400">for</span> (v,w) in adj[u]:</div>
+                        <div class="code-line" data-line="6"><span class="code-line-number">6</span> <span
+                                class="text-purple-400">if</span> dist[u]+w < dist[v]:</div>
+                                <div class="code-line" data-line="7"><span class="code-line-number">7</span> dist[v] =
+                                    dist[u]+w</div>
+                                <div class="code-line" data-line="8"><span class="code-line-number">8</span>
+                                    pq.update(v, dist[v])</div>
                         </div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between"><span
-                            class="text-slate-400 text-sm">Status</span><span id="statusBadge"
-                            class="status-badge status-ready">Ready</span></div>
+
+                    <div class="glass-card rounded-xl p-3">
+                        <h2 class="text-xs font-semibold mb-2 text-slate-300">Metrics</h2>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="metric">
+                                <div class="text-xs text-slate-400">Relaxations</div>
+                                <div class="metric-value text-blue-400" id="relaxations">0</div>
+                            </div>
+                            <div class="metric">
+                                <div class="text-xs text-slate-400">Processed</div>
+                                <div class="metric-value text-green-400" id="processed">0</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="glass-card rounded-2xl p-4">
-                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Priority Queue</h3>
-                    <div id="pqContainer" class="flex flex-wrap min-h-[40px]"></div>
-                </div>
-                <div class="glass-card rounded-2xl p-4">
-                    <h2 class="font-semibold mb-2 text-sm"><span class="text-green-400">›_</span> Console</h2>
-                    <div id="consoleOutput"
-                        class="console-box h-28 overflow-y-auto p-2 rounded-xl text-xs text-green-400 font-mono"></div>
-                </div>
-                <div class="glass-card rounded-2xl p-4">
-                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Distances</h3>
-                    <div id="distTable" class="grid grid-cols-3 gap-2"></div>
-                </div>
-            </div>
-            <div class="lg:col-span-9">
-                <div class="glass-card rounded-2xl p-6 min-h-[500px] relative">
-                    <svg id="edgeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
-                    <div id="graphContainer" class="relative w-full h-full"></div>
+
+                <div class="lg:col-span-8">
+                    <div class="glass-card rounded-xl p-4">
+                        <h3 class="text-xs font-semibold text-slate-300 mb-2">Weighted Graph</h3>
+                        <div id="graphContainer" class="graph-container"></div>
+                        <div id="stepInfo" class="mt-2 text-center text-xs text-slate-400 font-mono"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <script>
-        const graph = { A: { B: 4, C: 2 }, B: { A: 4, C: 1, D: 5 }, C: { A: 2, B: 1, D: 8, E: 10 }, D: { B: 5, C: 8, E: 2, F: 6 }, E: { C: 10, D: 2, F: 3 }, F: { D: 6, E: 3 } };
-        const positions = { A: [100, 100], B: [250, 60], C: [250, 180], D: [400, 120], E: [400, 240], F: [520, 180] };
-        const graphCont = document.getElementById('graphContainer'), edgeCanvas = document.getElementById('edgeCanvas');
-        const consoleOutput = document.getElementById('consoleOutput'), pqCont = document.getElementById('pqContainer');
-        const distTable = document.getElementById('distTable'), statusBadge = document.getElementById('statusBadge');
-        const sourceSelect = document.getElementById('sourceNode'), speedSlider = document.getElementById('speedSlider'), speedValue = document.getElementById('speedValue');
-        let nodes = {}, dist = {}, isRunning = false, speed = 1000;
 
-        speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 800 ? 'Fast' : speed < 1400 ? 'Medium' : 'Slow'; });
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'py-1'; if (type === 'success') l.classList.add('text-blue-300'); if (type === 'update') l.classList.add('text-yellow-300'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
-        function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Running' ? 'status-running' : 'status-complete'); statusBadge.textContent = s === 'Running' ? 'Running...' : s; }
+        <script>
+            const graph = {
+                A: [['B', 4], ['C', 2]],
+                B: [['A', 4], ['C', 1], ['D', 5]],
+                C: [['A', 2], ['B', 1], ['D', 8], ['E', 10]],
+                D: [['B', 5], ['C', 8], ['E', 2]],
+                E: [['C', 10], ['D', 2]]
+            };
 
-        function initGraph() {
-            graphCont.innerHTML = ''; edgeCanvas.innerHTML = ''; sourceSelect.innerHTML = '';
-            Object.keys(graph).forEach(id => { sourceSelect.innerHTML += `<option value="${id}">${id}</option>`; const [x, y] = positions[id]; const node = document.createElement('div'); node.className = 'node'; node.id = `node-${id}`; node.style.left = `${x}px`; node.style.top = `${y}px`; node.innerHTML = `<span class="dist" id="dist-${id}">∞</span>${id}`; graphCont.appendChild(node); nodes[id] = node; });
-            const drawn = new Set();
-            Object.entries(graph).forEach(([from, neighbors]) => { Object.entries(neighbors).forEach(([to, weight]) => { const key = [from, to].sort().join('-'); if (!drawn.has(key)) { drawn.add(key); const [x1, y1] = positions[from], [x2, y2] = positions[to]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1 + 25); line.setAttribute('y1', y1 + 25); line.setAttribute('x2', x2 + 25); line.setAttribute('y2', y2 + 25); line.setAttribute('class', 'edge'); line.id = `edge-${key}`; edgeCanvas.appendChild(line); const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', (x1 + x2) / 2 + 25); text.setAttribute('y', (y1 + y2) / 2 + 25); text.setAttribute('class', 'edge-label'); text.setAttribute('text-anchor', 'middle'); text.textContent = weight; edgeCanvas.appendChild(text); } }); });
-        }
+            const nodePositions = {
+                A: { x: 60, y: 160 },
+                B: { x: 200, y: 60 },
+                C: { x: 200, y: 260 },
+                D: { x: 380, y: 100 },
+                E: { x: 450, y: 240 }
+            };
 
-        function resetGraph() { if (isRunning) return; Object.values(nodes).forEach(n => { n.className = 'node'; n.querySelector('.dist').innerText = '∞'; }); document.querySelectorAll('.edge').forEach(e => e.classList.remove('visited')); pqCont.innerHTML = ''; consoleOutput.innerHTML = ''; distTable.innerHTML = ''; setStatus('Ready'); }
-        function updateDistTable() { distTable.innerHTML = Object.entries(dist).map(([n, d]) => `<div class="dist-cell"><div class="font-bold">${n}</div><div class="text-yellow-400">${d === Infinity ? '∞' : d}</div></div>`).join(''); }
+            let nodes = {}, edgeElements = {}, dist = {}, prev = {}, processed = new Set();
+            let stateStack = [], currentStateIndex = -1;
+            let isPlaying = false, isPaused = false, isRunning = false, speed = 1;
+            let relaxCount = 0, processedCount = 0, audioEnabled = false, audioCtx = null;
 
-        async function runDijkstra() {
-            if (isRunning) return; isRunning = true; resetGraph(); setStatus('Running');
-            const source = sourceSelect.value; nodes[source].classList.add('start');
-            dist = {}; const visited = new Set();
-            Object.keys(graph).forEach(n => dist[n] = Infinity); dist[source] = 0;
-            document.getElementById(`dist-${source}`).innerText = '0'; updateDistTable();
-            const pq = [[0, source]]; log(`Starting from ${source}`);
-            while (pq.length > 0) {
-                pq.sort((a, b) => a[0] - b[0]); pqCont.innerHTML = pq.map(([d, n]) => `<span class="pq-item">${n}:${d}</span>`).join('');
-                const [d, u] = pq.shift(); if (visited.has(u)) continue; visited.add(u);
-                nodes[u].classList.add('current'); log(`Processing ${u} (dist=${d})`, 'update'); await sleep(speed);
-                for (const [v, weight] of Object.entries(graph[u])) { if (!visited.has(v)) { const newDist = dist[u] + weight; if (newDist < dist[v]) { dist[v] = newDist; pq.push([newDist, v]); document.getElementById(`dist-${v}`).innerText = newDist; log(`Update: dist[${v}] = ${newDist}`); const edgeKey = [u, v].sort().join('-'); document.getElementById(`edge-${edgeKey}`)?.classList.add('visited'); nodes[v].classList.add('visited'); updateDistTable(); } } }
-                await sleep(speed / 2); nodes[u].classList.remove('current'); nodes[u].classList.add('complete');
+            function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+            function playTone(freq, dur, type = 'sine') {
+                if (!audioEnabled || !audioCtx) return;
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.connect(g); g.connect(audioCtx.destination);
+                o.frequency.value = freq; o.type = type;
+                g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+                o.start(); o.stop(audioCtx.currentTime + dur);
             }
-            pqCont.innerHTML = '<span class="text-slate-500 text-sm">empty</span>'; log('Dijkstra complete!', 'success'); setStatus('Complete'); isRunning = false;
-        }
+            const sounds = { extract: () => playTone(500, 0.08), relax: () => playTone(600, 0.06), update: () => playTone(700, 0.08), done: () => playTone(800, 0.15) };
 
-        initGraph();
-    </script>
+            const container = document.getElementById('graphContainer');
+            const distTable = document.getElementById('distTable');
+            const speedSlider = document.getElementById('speedSlider'), speedValue = document.getElementById('speedValue');
+            const sourceNodeSelect = document.getElementById('sourceNode');
+            const statusBadge = document.getElementById('statusBadge');
+            const relaxationsEl = document.getElementById('relaxations'), processedEl = document.getElementById('processed');
+            const stepInfo = document.getElementById('stepInfo');
+            const playIcon = document.getElementById('playIcon'), pauseIcon = document.getElementById('pauseIcon');
+            const stepBackBtn = document.getElementById('stepBackBtn'), stepForwardBtn = document.getElementById('stepForwardBtn');
+            const audioToggle = document.getElementById('audioToggle');
+
+            speedSlider.addEventListener('input', e => { speed = parseFloat(e.target.value); speedValue.textContent = speed + 'x'; });
+            audioToggle.addEventListener('change', e => { audioEnabled = e.target.checked; if (audioEnabled) initAudio(); });
+
+            function setStatus(s) {
+                statusBadge.className = 'status-badge';
+                statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Running' ? 'status-running' : s === 'Paused' ? 'status-paused' : 'status-complete');
+                statusBadge.textContent = s === 'Running' ? 'Running...' : s;
+            }
+
+            function highlightCode(line) {
+                document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+                if (line) document.querySelector(`.code-line[data-line="${line}"]`)?.classList.add('active');
+            }
+
+            function drawEdge(from, to, weight) {
+                const p1 = nodePositions[from], p2 = nodePositions[to];
+                const dx = p2.x - p1.x, dy = p2.y - p1.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+                const edge = document.createElement('div');
+                edge.className = 'edge';
+                edge.id = `edge-${from}-${to}`;
+                edge.style.width = `${length - 52}px`;
+                edge.style.left = `${p1.x + 26}px`;
+                edge.style.top = `${p1.y + 26}px`;
+                edge.style.transform = `rotate(${angle}deg)`;
+                container.appendChild(edge);
+
+                const weightLabel = document.createElement('div');
+                weightLabel.className = 'edge-weight';
+                weightLabel.textContent = weight;
+                weightLabel.style.left = `${(p1.x + p2.x) / 2 + 26}px`;
+                weightLabel.style.top = `${(p1.y + p2.y) / 2 + 26}px`;
+                container.appendChild(weightLabel);
+
+                edgeElements[`${from}-${to}`] = edge;
+            }
+
+            function initGraph() {
+                container.innerHTML = '';
+                edgeElements = {};
+                const drawn = new Set();
+
+                for (const node in graph) {
+                    for (const [neighbor, weight] of graph[node]) {
+                        const key = [node, neighbor].sort().join('-');
+                        if (!drawn.has(key)) {
+                            drawEdge(node, neighbor, weight);
+                            drawn.add(key);
+                        }
+                    }
+                }
+
+                for (const node in nodePositions) {
+                    const el = document.createElement('div');
+                    el.className = 'node node-idle';
+                    el.innerHTML = `<span class="node-label">${node}</span><span class="node-dist">∞</span>`;
+                    el.style.left = `${nodePositions[node].x}px`;
+                    el.style.top = `${nodePositions[node].y}px`;
+                    container.appendChild(el);
+                    nodes[node] = el;
+                }
+            }
+
+            function updateDistTable(current = null) {
+                distTable.innerHTML = Object.keys(dist).map(n =>
+                    `<div class="dist-row ${n === current ? 'current' : ''}">
+                    <span class="dist-node">${n}</span>
+                    <span class="${dist[n] === Infinity ? 'dist-inf' : 'dist-val'}">${dist[n] === Infinity ? '∞' : dist[n]}</span>
+                </div>`
+                ).join('');
+            }
+
+            function updateNodeDist(node) {
+                const distEl = nodes[node].querySelector('.node-dist');
+                distEl.textContent = dist[node] === Infinity ? '∞' : dist[node];
+            }
+
+            function resetGraph() {
+                if (isRunning) return;
+                dist = {}; prev = {}; processed.clear();
+                relaxCount = 0; processedCount = 0;
+                relaxationsEl.textContent = '0'; processedEl.textContent = '0';
+                stateStack = []; currentStateIndex = -1;
+                stepInfo.textContent = ''; highlightCode(null);
+
+                for (const node in nodes) {
+                    nodes[node].className = 'node node-idle';
+                    nodes[node].querySelector('.node-dist').textContent = '∞';
+                    dist[node] = Infinity;
+                }
+                for (const key in edgeElements) edgeElements[key].className = 'edge';
+                updateDistTable();
+                setStatus('Ready'); updatePlayPauseBtn(); stepBackBtn.disabled = true; stepForwardBtn.disabled = true;
+            }
+
+            function captureState(info, codeLine) {
+                const state = { dist: { ...dist }, processed: new Set(processed), nodeClasses: {}, edgeClasses: {}, info, codeLine, relaxCount, processedCount };
+                for (const n in nodes) state.nodeClasses[n] = nodes[n].className;
+                for (const k in edgeElements) state.edgeClasses[k] = edgeElements[k].className;
+                if (currentStateIndex < stateStack.length - 1) stateStack = stateStack.slice(0, currentStateIndex + 1);
+                stateStack.push(state); currentStateIndex = stateStack.length - 1;
+            }
+
+            function restoreState(idx) {
+                if (idx < 0 || idx >= stateStack.length) return;
+                const s = stateStack[idx];
+                dist = { ...s.dist }; processed = new Set(s.processed);
+                for (const n in nodes) { nodes[n].className = s.nodeClasses[n]; updateNodeDist(n); }
+                for (const k in edgeElements) edgeElements[k].className = s.edgeClasses[k];
+                relaxCount = s.relaxCount; processedCount = s.processedCount;
+                relaxationsEl.textContent = relaxCount; processedEl.textContent = processedCount;
+                updateDistTable();
+                stepInfo.textContent = s.info; highlightCode(s.codeLine);
+                currentStateIndex = idx;
+                stepBackBtn.disabled = currentStateIndex <= 0;
+                stepForwardBtn.disabled = currentStateIndex >= stateStack.length - 1;
+            }
+
+            function stepBack() { if (currentStateIndex > 0) { isPaused = true; setStatus('Paused'); restoreState(currentStateIndex - 1); } }
+            function stepForward() { if (currentStateIndex < stateStack.length - 1) restoreState(currentStateIndex + 1); }
+
+            function updatePlayPauseBtn() {
+                if (isPlaying) { playIcon.classList.add('hidden'); pauseIcon.classList.remove('hidden'); document.getElementById('playPauseBtn').classList.replace('btn-play', 'btn-pause'); }
+                else { playIcon.classList.remove('hidden'); pauseIcon.classList.add('hidden'); document.getElementById('playPauseBtn').classList.replace('btn-pause', 'btn-play'); }
+            }
+
+            async function togglePlayPause() {
+                if (!isRunning) startDijkstra();
+                else if (isPlaying) { isPlaying = false; isPaused = true; setStatus('Paused'); updatePlayPauseBtn(); }
+                else { isPlaying = true; isPaused = false; setStatus('Running'); updatePlayPauseBtn(); }
+            }
+
+            function sleep(ms) { return new Promise(r => { const check = () => { if (!isPaused) r(); else setTimeout(check, 50); }; setTimeout(check, ms / speed); }); }
+            async function waitIfPaused() { while (isPaused && isRunning) await new Promise(r => setTimeout(r, 50)); }
+
+            async function startDijkstra() {
+                isRunning = true; isPlaying = true; isPaused = false;
+                stateStack = []; currentStateIndex = -1;
+                resetGraph();
+                setStatus('Running'); updatePlayPauseBtn();
+                stepBackBtn.disabled = false; stepForwardBtn.disabled = true;
+
+                const source = sourceNodeSelect.value;
+                dist[source] = 0;
+                nodes[source].className = 'node node-source';
+                updateNodeDist(source);
+                updateDistTable();
+                highlightCode(1);
+                captureState(`Initialize dist[${source}] = 0`, 1);
+                await sleep(500);
+
+                // Priority queue (simple array)
+                let pq = [[source, 0]];
+                highlightCode(2);
+                captureState(`Insert ${source} into priority queue`, 2);
+                await sleep(400);
+
+                while (pq.length > 0) {
+                    await waitIfPaused();
+                    highlightCode(3);
+
+                    // Extract min
+                    pq.sort((a, b) => a[1] - b[1]);
+                    const [u, d] = pq.shift();
+
+                    if (processed.has(u)) continue;
+
+                    nodes[u].className = 'node node-current';
+                    sounds.extract();
+                    highlightCode(4);
+                    stepInfo.textContent = `Extract min: ${u} (dist=${d})`;
+                    captureState(`Extract ${u} with dist=${d}`, 4);
+                    await sleep(500);
+
+                    processed.add(u);
+                    processedCount++; processedEl.textContent = processedCount;
+                    updateDistTable(u);
+
+                    // Relax neighbors
+                    highlightCode(5);
+                    for (const [v, weight] of graph[u]) {
+                        await waitIfPaused();
+
+                        if (processed.has(v)) continue;
+
+                        nodes[v].className = 'node node-queue';
+                        const edgeKey = edgeElements[`${u}-${v}`] ? `${u}-${v}` : `${v}-${u}`;
+                        edgeElements[edgeKey].className = 'edge edge-relaxed';
+
+                        highlightCode(6);
+                        sounds.relax();
+                        stepInfo.textContent = `Check: dist[${u}](${dist[u]}) + ${weight} < dist[${v}](${dist[v] === Infinity ? '∞' : dist[v]})?`;
+                        captureState(`Relax edge (${u}, ${v}, ${weight})`, 6);
+                        await sleep(400);
+
+                        if (dist[u] + weight < dist[v]) {
+                            dist[v] = dist[u] + weight;
+                            prev[v] = u;
+                            updateNodeDist(v);
+                            updateDistTable(u);
+
+                            pq.push([v, dist[v]]);
+                            relaxCount++; relaxationsEl.textContent = relaxCount;
+                            sounds.update();
+                            highlightCode(7);
+                            stepInfo.textContent = `Update: dist[${v}] = ${dist[v]}`;
+                            captureState(`dist[${v}] = ${dist[v]}`, 7);
+                            await sleep(400);
+                            highlightCode(8);
+                            await sleep(200);
+                        }
+
+                        if (!processed.has(v)) nodes[v].className = 'node node-idle';
+                        edgeElements[edgeKey].className = 'edge';
+                    }
+
+                    nodes[u].className = 'node node-done';
+                    captureState(`${u} processed`, 4);
+                    await sleep(300);
+                }
+
+                // Mark shortest path edges
+                for (const v in prev) {
+                    const u = prev[v];
+                    const edgeKey = edgeElements[`${u}-${v}`] ? `${u}-${v}` : `${v}-${u}`;
+                    edgeElements[edgeKey].className = 'edge edge-shortest';
+                }
+
+                sounds.done();
+                setStatus('Complete');
+                stepInfo.textContent = 'Dijkstra Complete!';
+                captureState('Dijkstra Complete!', null);
+                isRunning = false; isPlaying = false; updatePlayPauseBtn(); highlightCode(null);
+            }
+
+            initGraph();
+            resetGraph();
+        </script>
 </body>
 
 </html>

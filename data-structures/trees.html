@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Binary Tree Visualizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
         * {
             font-family: 'Inter', sans-serif;
@@ -21,218 +23,484 @@
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(148, 163, 184, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .tree-container {
+            position: relative;
+            min-height: 350px;
         }
 
         .tree-node {
-            width: 50px;
-            height: 50px;
+            position: absolute;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border: 3px solid #4ade80;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            font-weight: bold;
             font-size: 16px;
-            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
             transition: all 0.3s;
-            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
-        }
-
-        .tree-node.highlight {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            border-color: #fbbf24;
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
-            transform: scale(1.2);
             z-index: 10;
+            transform: translate(-50%, -50%);
         }
 
-        .tree-node.visited {
+        .tree-node-default {
             background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            border-color: #a78bfa;
+            border: 3px solid #a78bfa;
+        }
+
+        .tree-node-root {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: 3px solid #86efac;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .tree-node-visiting {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 3px solid #fde68a;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+
+        .tree-node-visited {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: 3px solid #6ee7b7;
+        }
+
+        .tree-node-found {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+            border: 3px solid #f9a8d4;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.7);
         }
 
         .tree-edge {
-            stroke: #4ade80;
-            stroke-width: 3;
+            position: absolute;
+            height: 3px;
+            background: #6366f1;
+            transform-origin: left center;
+            z-index: 1;
         }
 
-        .console-box {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(74, 222, 128, 0.2);
+        .tree-edge-visited {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+
+        .traversal-result {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            min-height: 50px;
         }
 
         .traversal-item {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            padding: 8px 14px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            animation: pop-in 0.2s ease;
+        }
+
+        @keyframes pop-in {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 10px;
             font-weight: 600;
-            font-size: 14px;
-            display: inline-block;
-            margin: 3px;
-            box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-traversal {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(71, 85, 105, 0.5);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        .slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #22c55e, #4ade80);
-            cursor: pointer;
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
+            transition: all 0.2s;
             font-size: 12px;
-            font-weight: 600;
         }
 
-        .status-ready {
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
+        .btn-insert {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
         }
 
-        .status-running {
-            background: rgba(139, 92, 246, 0.2);
-            color: #c4b5fd;
+        .btn-traverse {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
         }
 
-        .status-complete {
-            background: rgba(34, 197, 94, 0.2);
-            color: #86efac;
+        .btn-search {
+            background: linear-gradient(135deg, #ec4899, #db2777);
+        }
+
+        .btn-clear {
+            background: linear-gradient(135deg, #64748b, #475569);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            transform: none !important;
+        }
+
+        .metric {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .code-panel {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .code-line {
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .code-line.active {
+            background: rgba(139, 92, 246, 0.3);
+            border-left: 3px solid #8b5cf6;
         }
     </style>
 </head>
 
 <body class="text-white">
-    <div class="container mx-auto p-6 max-w-6xl">
-        <header class="mb-8">
+    <div class="container mx-auto p-4 max-w-7xl">
+        <header class="mb-4">
             <a href="../index.html"
-                class="inline-flex items-center gap-2 text-slate-400 hover:text-green-400 transition mb-4 text-sm">
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-purple-400 transition mb-2 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Home
             </a>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-2xl shadow-lg shadow-green-500/30">
-                    🌲</div>
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center text-lg shadow-lg shadow-purple-500/30">
+                    🌳</div>
                 <div>
                     <h1
-                        class="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                        Binary Search Tree</h1>
-                    <p class="text-slate-400 text-sm">Hierarchical data structure • O(log n) operations</p>
+                        class="text-xl font-bold bg-gradient-to-r from-purple-400 to-violet-400 bg-clip-text text-transparent">
+                        Binary Tree Visualizer</h1>
+                    <p class="text-slate-400 text-xs">BST • O(log n) avg • Inorder/Preorder/Postorder</p>
                 </div>
             </div>
         </header>
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-3 space-y-4">
-                <div class="glass-card rounded-2xl p-5">
-                    <h2 class="text-lg font-semibold mb-4">Operations</h2>
-                    <input type="number" id="nodeInput" placeholder="Enter value..."
-                        class="w-full bg-slate-700/50 border border-slate-600 rounded-xl px-4 py-3 mb-4 text-white focus:outline-none focus:border-green-500"
-                        onkeypress="if(event.key==='Enter') insertNode()">
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <button onclick="insertNode()"
-                            class="btn-primary py-2.5 rounded-xl font-semibold text-sm">Insert</button>
-                        <button onclick="searchNode()"
-                            class="bg-gradient-to-r from-amber-500 to-orange-500 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-amber-500/30">Search</button>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-4 space-y-3">
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Operations</h2>
+                    <div class="flex gap-2 mb-3">
+                        <input type="number" id="valueInput"
+                            class="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2 text-lg font-mono"
+                            placeholder="Value">
                     </div>
-                    <div class="mb-4">
-                        <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Speed</span><span
-                                id="speedValue" class="text-green-400 font-mono">Medium</span></div><input type="range"
-                            id="speedSlider" min="200" max="1000" value="500"
-                            class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                            style="direction:rtl">
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <button onclick="insert()" class="btn btn-insert">Insert</button>
+                        <button onclick="searchValue()" class="btn btn-search" disabled id="searchBtn">Search</button>
                     </div>
-                    <h3 class="text-sm font-semibold text-slate-400 mb-2 mt-4">Traversals</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="traverse('inorder')"
-                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Inorder</button>
-                        <button onclick="traverse('preorder')"
-                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Preorder</button>
-                        <button onclick="traverse('postorder')"
-                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Postorder</button>
-                        <button onclick="traverse('levelorder')"
-                            class="btn-traversal py-2 rounded-xl text-xs font-semibold">Level</button>
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        <button onclick="traverse('inorder')" class="btn btn-traverse" disabled
+                            id="inorderBtn">Inorder</button>
+                        <button onclick="traverse('preorder')" class="btn btn-traverse" disabled
+                            id="preorderBtn">Preorder</button>
+                        <button onclick="traverse('postorder')" class="btn btn-traverse" disabled
+                            id="postorderBtn">Postorder</button>
                     </div>
-                    <button onclick="clearTree()"
-                        class="w-full btn-secondary py-2.5 rounded-xl font-semibold text-sm mt-4">Clear</button>
-                    <div class="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between"><span
-                            class="text-slate-400 text-sm">Status</span><span id="statusBadge"
-                            class="status-badge status-ready">Ready</span></div>
+                    <button onclick="clearTree()" class="btn btn-clear w-full" disabled id="clearBtn">Clear
+                        Tree</button>
+                    <div class="mt-3">
+                        <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                            <input type="checkbox" id="audioToggle" class="w-3 h-3 rounded">
+                            <span>🔊 Sound</span>
+                        </label>
+                    </div>
                 </div>
-                <div class="glass-card rounded-2xl p-4">
-                    <h3 class="text-sm font-semibold text-slate-400 mb-2">Traversal Result</h3>
-                    <div id="traversalResult" class="flex flex-wrap min-h-[40px]"></div>
+
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Metrics</h2>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="metric">
+                            <div class="text-xs text-slate-400">Nodes</div>
+                            <div class="metric-value text-purple-400" id="nodeCount">0</div>
+                        </div>
+                        <div class="metric">
+                            <div class="text-xs text-slate-400">Height</div>
+                            <div class="metric-value text-blue-400" id="heightValue">0</div>
+                        </div>
+                        <div class="metric">
+                            <div class="text-xs text-slate-400">Root</div>
+                            <div class="metric-value text-green-400" id="rootValue">-</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="glass-card rounded-2xl p-4">
-                    <h2 class="font-semibold mb-2 text-sm"><span class="text-green-400">›_</span> Console</h2>
-                    <div id="consoleOutput"
-                        class="console-box h-28 overflow-y-auto p-2 rounded-xl text-xs text-green-400 font-mono"></div>
+
+                <div class="glass-card rounded-xl p-3">
+                    <h2 class="text-xs font-semibold mb-2 text-slate-300">Traversal Order</h2>
+                    <div class="code-panel bg-slate-900/50 rounded-lg p-2 mb-2">
+                        <div class="code-line" data-line="inorder">Inorder: Left → Root → Right</div>
+                        <div class="code-line" data-line="preorder">Preorder: Root → Left → Right</div>
+                        <div class="code-line" data-line="postorder">Postorder: Left → Right → Root</div>
+                    </div>
+                    <div id="traversalResult" class="traversal-result">
+                        <span class="text-slate-500 text-sm">Traversal result will appear here</span>
+                    </div>
                 </div>
             </div>
-            <div class="lg:col-span-9">
-                <div class="glass-card rounded-2xl p-6 min-h-[550px] relative overflow-auto">
-                    <svg id="edgeCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></svg>
-                    <div id="treeContainer" class="relative w-full min-w-[600px]" style="height: 500px;"></div>
+
+            <div class="lg:col-span-8">
+                <div class="glass-card rounded-xl p-4 h-full">
+                    <h3 class="text-sm font-semibold text-slate-300 mb-3 text-center">Binary Search Tree</h3>
+                    <div id="treeContainer" class="tree-container border-2 border-dashed border-slate-600 rounded-xl">
+                        <div id="emptyMessage" class="text-center text-slate-500 pt-32">Insert values to build the tree
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
-        class TreeNode { constructor(val) { this.val = val; this.left = null; this.right = null; } }
-        class BST { constructor() { this.root = null; } insert(val) { const newNode = new TreeNode(val); if (!this.root) { this.root = newNode; return; } let curr = this.root; while (true) { if (val < curr.val) { if (!curr.left) { curr.left = newNode; break; } curr = curr.left; } else { if (!curr.right) { curr.right = newNode; break; } curr = curr.right; } } } search(val) { let curr = this.root; while (curr) { if (val === curr.val) return curr; curr = val < curr.val ? curr.left : curr.right; } return null; } }
-
-        const bst = new BST(), treeCont = document.getElementById('treeContainer'), edgeCanvas = document.getElementById('edgeCanvas');
-        const consoleOutput = document.getElementById('consoleOutput'), traversalResult = document.getElementById('traversalResult');
-        const statusBadge = document.getElementById('statusBadge'), speedSlider = document.getElementById('speedSlider'), speedValue = document.getElementById('speedValue');
-        let nodeElements = {}, isRunning = false, speed = 500;
-
-        speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 350 ? 'Fast' : speed < 700 ? 'Medium' : 'Slow'; });
-        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'py-1'; if (type === 'success') l.classList.add('text-blue-300'); if (type === 'error') l.classList.add('text-red-400'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
-        function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Running' ? 'status-running' : 'status-complete'); statusBadge.textContent = s === 'Running' ? 'Running...' : s; }
-
-        function render() {
-            treeCont.innerHTML = ''; edgeCanvas.innerHTML = ''; nodeElements = {};
-            if (!bst.root) { treeCont.innerHTML = '<p class="text-slate-500 text-center pt-20">Tree is empty - Insert nodes!</p>'; return; }
-            const positions = {};
-            function calcPos(node, x, y, dx) { if (!node) return; positions[node.val] = { x, y }; calcPos(node.left, x - dx, y + 80, dx / 1.8); calcPos(node.right, x + dx, y + 80, dx / 1.8); }
-            calcPos(bst.root, treeCont.offsetWidth / 2, 40, 120);
-            function drawEdges(node) { if (!node) return; const p = positions[node.val]; if (node.left) { const c = positions[node.left.val]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.x); line.setAttribute('y1', p.y + 25); line.setAttribute('x2', c.x); line.setAttribute('y2', c.y - 25); line.setAttribute('class', 'tree-edge'); edgeCanvas.appendChild(line); drawEdges(node.left); } if (node.right) { const c = positions[node.right.val]; const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', p.x); line.setAttribute('y1', p.y + 25); line.setAttribute('x2', c.x); line.setAttribute('y2', c.y - 25); line.setAttribute('class', 'tree-edge'); edgeCanvas.appendChild(line); drawEdges(node.right); } } drawEdges(bst.root);
-            function drawNodes(node) { if (!node) return; const p = positions[node.val]; const el = document.createElement('div'); el.className = 'tree-node'; el.style.left = `${p.x - 25}px`; el.style.top = `${p.y - 25}px`; el.innerText = node.val; el.id = `node-${node.val}`; treeCont.appendChild(el); nodeElements[node.val] = el; drawNodes(node.left); drawNodes(node.right); } drawNodes(bst.root);
+        class TreeNode {
+            constructor(value) { this.value = value; this.left = null; this.right = null; }
         }
 
-        function insertNode() { if (isRunning) return; const val = parseInt(document.getElementById('nodeInput').value); if (isNaN(val)) { log('Enter valid number', 'error'); return; } bst.insert(val); log(`Inserted ${val}`, 'success'); document.getElementById('nodeInput').value = ''; render(); }
-        async function searchNode() { if (isRunning) return; const val = parseInt(document.getElementById('nodeInput').value); if (isNaN(val)) { log('Enter value to search', 'error'); return; } isRunning = true; setStatus('Running'); log(`Searching for ${val}...`); let curr = bst.root; while (curr) { nodeElements[curr.val]?.classList.add('highlight'); await sleep(speed); if (val === curr.val) { log(`Found ${val}!`, 'success'); setTimeout(() => { nodeElements[curr.val]?.classList.remove('highlight'); }, 2000); isRunning = false; setStatus('Complete'); return; } nodeElements[curr.val]?.classList.remove('highlight'); nodeElements[curr.val]?.classList.add('visited'); curr = val < curr.val ? curr.left : curr.right; } log(`${val} not found`, 'error'); isRunning = false; setStatus('Complete'); setTimeout(() => Object.values(nodeElements).forEach(e => e.classList.remove('visited')), 1500); }
-        async function traverse(type) { if (isRunning) return; isRunning = true; setStatus('Running'); traversalResult.innerHTML = ''; log(`${type} traversal`); const result = []; if (type === 'inorder') await inorder(bst.root, result); else if (type === 'preorder') await preorder(bst.root, result); else if (type === 'postorder') await postorder(bst.root, result); else await levelorder(result); log(`Result: [${result.join(', ')}]`, 'success'); isRunning = false; setStatus('Complete'); setTimeout(() => Object.values(nodeElements).forEach(e => e.classList.remove('highlight', 'visited')), 1500); }
-        async function inorder(node, result) { if (!node) return; await inorder(node.left, result); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); await inorder(node.right, result); }
-        async function preorder(node, result) { if (!node) return; nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); await preorder(node.left, result); await preorder(node.right, result); }
-        async function postorder(node, result) { if (!node) return; await postorder(node.left, result); await postorder(node.right, result); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); }
-        async function levelorder(result) { if (!bst.root) return; const queue = [bst.root]; while (queue.length) { const node = queue.shift(); nodeElements[node.val]?.classList.add('highlight'); await sleep(speed); result.push(node.val); traversalResult.innerHTML += `<span class="traversal-item">${node.val}</span>`; nodeElements[node.val]?.classList.remove('highlight'); nodeElements[node.val]?.classList.add('visited'); if (node.left) queue.push(node.left); if (node.right) queue.push(node.right); } }
-        function clearTree() { bst.root = null; log('Tree cleared'); render(); traversalResult.innerHTML = ''; }
+        let root = null, nodeCount = 0;
+        let audioEnabled = false, audioCtx = null;
 
-        [50, 30, 70, 20, 40, 60, 80].forEach(v => bst.insert(v)); render();
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playTone(freq, dur) {
+            if (!audioEnabled || !audioCtx) return;
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            o.start(); o.stop(audioCtx.currentTime + dur);
+        }
+        const sounds = { insert: () => playTone(600, 0.1), visit: () => playTone(500, 0.06), found: () => playTone(800, 0.15) };
+
+        const treeContainer = document.getElementById('treeContainer');
+        const valueInput = document.getElementById('valueInput');
+        const nodeCountEl = document.getElementById('nodeCount');
+        const heightValue = document.getElementById('heightValue');
+        const rootValue = document.getElementById('rootValue');
+        const traversalResult = document.getElementById('traversalResult');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const audioToggle = document.getElementById('audioToggle');
+
+        audioToggle.addEventListener('change', e => { audioEnabled = e.target.checked; if (audioEnabled) initAudio(); });
+
+        function highlightCode(op) {
+            document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+            if (op) document.querySelector(`.code-line[data-line="${op}"]`)?.classList.add('active');
+        }
+
+        function getHeight(node) {
+            if (!node) return 0;
+            return 1 + Math.max(getHeight(node.left), getHeight(node.right));
+        }
+
+        function updateUI() {
+            nodeCountEl.textContent = nodeCount;
+            heightValue.textContent = getHeight(root);
+            rootValue.textContent = root ? root.value : '-';
+            emptyMessage.style.display = !root ? 'block' : 'none';
+            document.getElementById('searchBtn').disabled = !root;
+            document.getElementById('inorderBtn').disabled = !root;
+            document.getElementById('preorderBtn').disabled = !root;
+            document.getElementById('postorderBtn').disabled = !root;
+            document.getElementById('clearBtn').disabled = !root;
+        }
+
+        function renderTree() {
+            // Remove old nodes and edges
+            treeContainer.querySelectorAll('.tree-node, .tree-edge').forEach(el => el.remove());
+            if (!root) return;
+
+            const containerWidth = treeContainer.offsetWidth;
+            const positions = {};
+
+            function calcPositions(node, level, left, right) {
+                if (!node) return;
+                const x = (left + right) / 2;
+                const y = 50 + level * 70;
+                positions[node.value] = { x: x * containerWidth, y };
+                calcPositions(node.left, level + 1, left, (left + right) / 2);
+                calcPositions(node.right, level + 1, (left + right) / 2, right);
+            }
+
+            calcPositions(root, 0, 0, 1);
+
+            // Draw edges first
+            function drawEdges(node) {
+                if (!node) return;
+                const pos = positions[node.value];
+                if (node.left) {
+                    const childPos = positions[node.left.value];
+                    drawEdge(pos.x, pos.y, childPos.x, childPos.y);
+                    drawEdges(node.left);
+                }
+                if (node.right) {
+                    const childPos = positions[node.right.value];
+                    drawEdge(pos.x, pos.y, childPos.x, childPos.y);
+                    drawEdges(node.right);
+                }
+            }
+
+            function drawEdge(x1, y1, x2, y2) {
+                const dx = x2 - x1, dy = y2 - y1;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                const edge = document.createElement('div');
+                edge.className = 'tree-edge';
+                edge.style.width = `${length}px`;
+                edge.style.left = `${x1}px`;
+                edge.style.top = `${y1}px`;
+                edge.style.transform = `rotate(${angle}deg)`;
+                treeContainer.appendChild(edge);
+            }
+
+            drawEdges(root);
+
+            // Draw nodes
+            function drawNodes(node, isRoot = false) {
+                if (!node) return;
+                const pos = positions[node.value];
+                const el = document.createElement('div');
+                el.className = `tree-node ${isRoot ? 'tree-node-root' : 'tree-node-default'}`;
+                el.id = `node-${node.value}`;
+                el.textContent = node.value;
+                el.style.left = `${pos.x}px`;
+                el.style.top = `${pos.y}px`;
+                treeContainer.appendChild(el);
+                drawNodes(node.left);
+                drawNodes(node.right);
+            }
+
+            drawNodes(root, true);
+        }
+
+        function insert() {
+            const val = parseInt(valueInput.value);
+            if (isNaN(val)) { valueInput.value = Math.floor(Math.random() * 100); return; }
+
+            root = insertNode(root, val);
+            nodeCount++;
+            sounds.insert();
+            renderTree();
+            updateUI();
+            valueInput.value = Math.floor(Math.random() * 100);
+        }
+
+        function insertNode(node, value) {
+            if (!node) return new TreeNode(value);
+            if (value < node.value) node.left = insertNode(node.left, value);
+            else node.right = insertNode(node.right, value);
+            return node;
+        }
+
+        async function traverse(type) {
+            highlightCode(type);
+            traversalResult.innerHTML = '';
+
+            async function visit(node) {
+                if (!node) return;
+                const el = document.getElementById(`node-${node.value}`);
+
+                if (type === 'preorder') {
+                    el.className = 'tree-node tree-node-visiting';
+                    sounds.visit();
+                    await new Promise(r => setTimeout(r, 400));
+                    addTraversalItem(node.value);
+                    el.className = 'tree-node tree-node-visited';
+                }
+
+                await visit(node.left);
+
+                if (type === 'inorder') {
+                    el.className = 'tree-node tree-node-visiting';
+                    sounds.visit();
+                    await new Promise(r => setTimeout(r, 400));
+                    addTraversalItem(node.value);
+                    el.className = 'tree-node tree-node-visited';
+                }
+
+                await visit(node.right);
+
+                if (type === 'postorder') {
+                    el.className = 'tree-node tree-node-visiting';
+                    sounds.visit();
+                    await new Promise(r => setTimeout(r, 400));
+                    addTraversalItem(node.value);
+                    el.className = 'tree-node tree-node-visited';
+                }
+            }
+
+            await visit(root);
+            setTimeout(() => { renderTree(); highlightCode(null); }, 1000);
+        }
+
+        function addTraversalItem(value) {
+            const item = document.createElement('div');
+            item.className = 'traversal-item';
+            item.textContent = value;
+            traversalResult.appendChild(item);
+        }
+
+        async function searchValue() {
+            const val = parseInt(valueInput.value);
+            if (isNaN(val)) return;
+
+            let current = root;
+            while (current) {
+                const el = document.getElementById(`node-${current.value}`);
+                el.className = 'tree-node tree-node-visiting';
+                sounds.visit();
+                await new Promise(r => setTimeout(r, 500));
+
+                if (current.value === val) {
+                    el.className = 'tree-node tree-node-found';
+                    sounds.found();
+                    setTimeout(() => renderTree(), 1500);
+                    return;
+                }
+
+                el.className = 'tree-node tree-node-visited';
+                current = val < current.value ? current.left : current.right;
+            }
+            renderTree();
+        }
+
+        function clearTree() {
+            root = null;
+            nodeCount = 0;
+            traversalResult.innerHTML = '<span class="text-slate-500 text-sm">Traversal result will appear here</span>';
+            renderTree();
+            updateUI();
+        }
+
+        valueInput.value = Math.floor(Math.random() * 100);
+        updateUI();
     </script>
 </body>
 
