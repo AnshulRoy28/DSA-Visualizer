@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
+
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -27,7 +28,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
             transition: left 0.5s;
         }
 
@@ -39,7 +40,7 @@
             transform: translateY(-8px) scale(1.02);
             border-color: rgba(59, 130, 246, 0.5);
             box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.3),
-                        0 0 20px rgba(59, 130, 246, 0.1);
+                0 0 20px rgba(59, 130, 246, 0.1);
         }
 
         .category-header {
@@ -49,7 +50,7 @@
 
         .hero-gradient {
             background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-                        radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+                radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
         }
 
         .icon-box {
@@ -68,8 +69,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
         .float-animation {
@@ -77,8 +85,15 @@
         }
 
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            }
         }
 
         .pulse-glow {
@@ -86,6 +101,7 @@
         }
     </style>
 </head>
+
 <body class="bg-slate-900 text-white min-h-screen">
 
     <!-- Hero Section -->
@@ -93,8 +109,10 @@
         <div class="container mx-auto px-4 py-16 max-w-7xl">
             <header class="text-center mb-16">
                 <div class="inline-block mb-6">
-                    <div class="icon-box w-20 h-20 rounded-2xl flex items-center justify-center float-animation pulse-glow">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <div
+                        class="icon-box w-20 h-20 rounded-2xl flex items-center justify-center float-animation pulse-glow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
                             <path d="M2 17l10 5 10-5"></path>
                             <path d="M2 12l10 5 10-5"></path>
@@ -102,12 +120,14 @@
                     </div>
                 </div>
                 <h1 class="text-5xl md:text-6xl font-extrabold mb-4">
-                    <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    <span
+                        class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                         Algorithm Visualizer
                     </span>
                 </h1>
                 <p class="text-xl text-slate-400 max-w-2xl mx-auto">
-                    Interactive visualizations for data structures and algorithms commonly taught in introductory CS courses
+                    Interactive visualizations for data structures and algorithms commonly taught in introductory CS
+                    courses
                 </p>
             </header>
 
@@ -115,7 +135,8 @@
             <section class="mb-12">
                 <div class="category-header px-4 py-3 rounded-r-lg mb-6">
                     <h2 class="text-2xl font-bold text-blue-400 flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
                             <path d="M7 12h10"></path>
                             <path d="M10 18h4"></path>
@@ -124,8 +145,8 @@
                     </h2>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    
-                    <a href="bubblesort.html" class="card rounded-xl p-6 block">
+
+                    <a href="sorting/bubblesort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🫧</span>
@@ -133,14 +154,15 @@
                             <span class="w-3 h-3 rounded-full status-ready"></span>
                         </div>
                         <h3 class="text-xl font-bold mb-2">Bubble Sort</h3>
-                        <p class="text-slate-400 text-sm mb-3">Repeatedly swaps adjacent elements if they're in wrong order</p>
+                        <p class="text-slate-400 text-sm mb-3">Repeatedly swaps adjacent elements if they're in wrong
+                            order</p>
                         <div class="flex items-center gap-2 text-xs">
                             <span class="bg-red-500/20 text-red-300 px-2 py-1 rounded">O(n²)</span>
                             <span class="text-slate-500">Time Complexity</span>
                         </div>
                     </a>
 
-                    <a href="mergesort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/mergesort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🔀</span>
@@ -155,7 +177,7 @@
                         </div>
                     </a>
 
-                    <a href="quicksort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/quicksort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">⚡</span>
@@ -170,7 +192,7 @@
                         </div>
                     </a>
 
-                    <a href="heapsort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/heapsort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🏔️</span>
@@ -185,7 +207,7 @@
                         </div>
                     </a>
 
-                    <a href="insertionsort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/insertionsort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">📥</span>
@@ -200,7 +222,7 @@
                         </div>
                     </a>
 
-                    <a href="selectionsort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/selectionsort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">👆</span>
@@ -215,7 +237,7 @@
                         </div>
                     </a>
 
-                    <a href="countingsort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/countingsort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🔢</span>
@@ -230,7 +252,7 @@
                         </div>
                     </a>
 
-                    <a href="radixsort.html" class="card rounded-xl p-6 block">
+                    <a href="sorting/radixsort.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🎯</span>
@@ -250,9 +272,11 @@
 
             <!-- Data Structures -->
             <section class="mb-12">
-                <div class="category-header px-4 py-3 rounded-r-lg mb-6" style="border-color: #10b981; background: linear-gradient(90deg, rgba(16, 185, 129, 0.2), transparent);">
+                <div class="category-header px-4 py-3 rounded-r-lg mb-6"
+                    style="border-color: #10b981; background: linear-gradient(90deg, rgba(16, 185, 129, 0.2), transparent);">
                     <h2 class="text-2xl font-bold text-emerald-400 flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="3" width="7" height="7"></rect>
                             <rect x="14" y="3" width="7" height="7"></rect>
                             <rect x="14" y="14" width="7" height="7"></rect>
@@ -262,8 +286,8 @@
                     </h2>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    
-                    <a href="stack.html" class="card rounded-xl p-6 block">
+
+                    <a href="data-structures/stack.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">📚</span>
@@ -278,7 +302,7 @@
                         </div>
                     </a>
 
-                    <a href="queue.html" class="card rounded-xl p-6 block">
+                    <a href="data-structures/queue.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🚶</span>
@@ -293,7 +317,7 @@
                         </div>
                     </a>
 
-                    <a href="linkedlist.html" class="card rounded-xl p-6 block">
+                    <a href="data-structures/linkedlist.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🔗</span>
@@ -308,7 +332,7 @@
                         </div>
                     </a>
 
-                    <a href="trees.html" class="card rounded-xl p-6 block">
+                    <a href="data-structures/trees.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🌳</span>
@@ -323,7 +347,7 @@
                         </div>
                     </a>
 
-                    <a href="trie.html" class="card rounded-xl p-6 block">
+                    <a href="data-structures/trie.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-rose-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">📝</span>
@@ -338,7 +362,7 @@
                         </div>
                     </a>
 
-                    <a href="hashtable.html" class="card rounded-xl p-6 block">
+                    <a href="data-structures/hashtable.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">#️⃣</span>
@@ -358,9 +382,11 @@
 
             <!-- Search & Graph Algorithms -->
             <section class="mb-12">
-                <div class="category-header px-4 py-3 rounded-r-lg mb-6" style="border-color: #f59e0b; background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), transparent);">
+                <div class="category-header px-4 py-3 rounded-r-lg mb-6"
+                    style="border-color: #f59e0b; background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), transparent);">
                     <h2 class="text-2xl font-bold text-amber-400 flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </svg>
@@ -368,8 +394,8 @@
                     </h2>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    
-                    <a href="binarysearch.html" class="card rounded-xl p-6 block">
+
+                    <a href="search-graph/binarysearch.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🔍</span>
@@ -384,7 +410,7 @@
                         </div>
                     </a>
 
-                    <a href="bfs.html" class="card rounded-xl p-6 block">
+                    <a href="search-graph/bfs.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🌊</span>
@@ -399,7 +425,7 @@
                         </div>
                     </a>
 
-                    <a href="dfs.html" class="card rounded-xl p-6 block">
+                    <a href="search-graph/dfs.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🕳️</span>
@@ -414,7 +440,7 @@
                         </div>
                     </a>
 
-                    <a href="dijkstra.html" class="card rounded-xl p-6 block">
+                    <a href="search-graph/dijkstra.html" class="card rounded-xl p-6 block">
                         <div class="flex items-start justify-between mb-4">
                             <div class="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center">
                                 <span class="text-2xl">🛤️</span>
@@ -447,4 +473,5 @@
     </div>
 
 </body>
+
 </html>

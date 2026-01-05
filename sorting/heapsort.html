@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selection Sort Visualizer</title>
+    <title>Heap Sort Visualizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -36,11 +36,11 @@
         .bar {
             position: absolute;
             bottom: 0;
-            background: linear-gradient(180deg, #f472b6 0%, #ec4899 50%, #db2777 100%);
+            background: linear-gradient(180deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
             border-radius: 6px 6px 0 0;
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s;
             width: 32px;
-            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
             display: flex;
             align-items: flex-end;
             justify-content: center;
@@ -55,20 +55,9 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
-        .bar.current {
-            background: linear-gradient(180deg, #a78bfa 0%, #8b5cf6 100%);
-            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
-        }
-
-        .bar.min {
-            background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 100%);
-            box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
-            z-index: 10;
-        }
-
-        .bar.comparing {
-            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        .bar.heapifying {
+            background: linear-gradient(180deg, #c084fc 0%, #a855f7 100%);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
         }
 
         .bar.swapping {
@@ -92,14 +81,14 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
             transition: all 0.3s;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
         }
 
         .btn-secondary {
@@ -117,7 +106,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ec4899, #f472b6);
+            background: linear-gradient(135deg, #f97316, #fb923c);
             cursor: pointer;
         }
 
@@ -134,13 +123,13 @@
         }
 
         .status-sorting {
-            background: rgba(236, 72, 153, 0.2);
-            color: #f472b6;
+            background: rgba(249, 115, 22, 0.2);
+            color: #fb923c;
         }
 
         .status-complete {
-            background: rgba(236, 72, 153, 0.2);
-            color: #f9a8d4;
+            background: rgba(249, 115, 22, 0.2);
+            color: #fdba74;
         }
     </style>
 </head>
@@ -148,8 +137,8 @@
 <body class="text-white">
     <div class="container mx-auto p-6 max-w-6xl">
         <header class="mb-8">
-            <a href="home.html"
-                class="inline-flex items-center gap-2 text-slate-400 hover:text-pink-400 transition mb-4 text-sm">
+            <a href="../home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-orange-400 transition mb-4 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -157,13 +146,13 @@
             </a>
             <div class="flex items-center gap-4">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-2xl shadow-lg shadow-pink-500/30">
-                    👆</div>
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-2xl shadow-lg shadow-orange-500/30">
+                    🏔️</div>
                 <div>
                     <h1
-                        class="text-3xl font-bold bg-gradient-to-r from-pink-400 to-rose-400 bg-clip-text text-transparent">
-                        Selection Sort</h1>
-                    <p class="text-slate-400 text-sm">Find minimum and swap to front • O(n²)</p>
+                        class="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                        Heap Sort</h1>
+                    <p class="text-slate-400 text-sm">Binary heap-based sorting • O(n log n)</p>
                 </div>
             </div>
         </header>
@@ -171,7 +160,7 @@
             <div class="lg:col-span-3 space-y-5">
                 <div class="glass-card rounded-2xl p-5">
                     <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                         </svg>
@@ -180,14 +169,14 @@
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Array
-                                    Size</span><span id="sizeValue" class="text-pink-400 font-mono">12</span></div>
+                                    Size</span><span id="sizeValue" class="text-orange-400 font-mono">12</span></div>
                             <input type="range" id="sizeSlider" min="5" max="20" value="12"
                                 class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm mb-2"><span
                                     class="text-slate-400">Speed</span><span id="speedValue"
-                                    class="text-rose-400 font-mono">Medium</span></div>
+                                    class="text-red-400 font-mono">Medium</span></div>
                             <input type="range" id="speedSlider" min="100" max="800" value="400"
                                 class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                                 style="direction:rtl">
@@ -195,7 +184,7 @@
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <button onclick="generateArray()" id="genBtn"
                                 class="btn-secondary py-2.5 rounded-xl font-semibold text-sm">Reset</button>
-                            <button onclick="startSort()" id="sortBtn"
+                            <button onclick="startHeapSort()" id="sortBtn"
                                 class="btn-primary py-2.5 rounded-xl font-semibold text-sm">▶ Start</button>
                         </div>
                     </div>
@@ -229,7 +218,7 @@
         sizeSlider.addEventListener('input', e => { sizeValue.textContent = e.target.value; if (!isSorting) generateArray(); });
         speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 250 ? 'Fast' : speed < 500 ? 'Medium' : 'Slow'; });
 
-        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'console-line'; if (type === 'min') l.classList.add('text-yellow-300'); if (type === 'swap') l.classList.add('text-red-400'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
+        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'console-line'; if (type === 'heap') l.classList.add('text-purple-400'); if (type === 'swap') l.classList.add('text-red-400'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
         function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Sorting' ? 'status-sorting' : 'status-complete'); statusBadge.textContent = s === 'Sorting' ? 'Sorting...' : s; }
 
         function generateArray() {
@@ -248,38 +237,47 @@
             log(`Generated array (n=${size})`); setStatus('Ready');
         }
 
-        async function startSort() {
+        async function startHeapSort() {
             if (isSorting) return;
             isSorting = true; setStatus('Sorting');
             document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = true;
-            for (let i = 0; i < array.length - 1; i++) {
-                let minIdx = i;
-                bars[i].classList.add('current'); bars[minIdx].classList.add('min');
-                log(`Finding min from index ${i}`);
-                for (let j = i + 1; j < array.length; j++) {
-                    bars[j].classList.add('comparing'); await sleep(speed / 2);
-                    if (array[j] < array[minIdx]) {
-                        bars[minIdx].classList.remove('min');
-                        minIdx = j;
-                        bars[minIdx].classList.add('min');
-                        log(`New min: ${array[minIdx]}`, 'min');
-                    }
-                    bars[j].classList.remove('comparing');
-                }
-                if (minIdx !== i) {
-                    bars[i].classList.add('swapping'); bars[minIdx].classList.add('swapping');
-                    log(`Swap ${array[i]} ↔ ${array[minIdx]}`, 'swap');
-                    await swapBars(i, minIdx);
-                    [array[i], array[minIdx]] = [array[minIdx], array[i]];
-                    [bars[i], bars[minIdx]] = [bars[minIdx], bars[i]];
-                    bars[i].classList.remove('swapping'); bars[minIdx].classList.remove('swapping');
-                }
-                bars[i].classList.remove('current', 'min');
-                bars[i].classList.add('sorted');
-            }
-            bars[array.length - 1].classList.add('sorted');
+            await heapSort();
+            bars.forEach(b => b.classList.add('sorted'));
             log("Sort complete!"); setStatus('Complete');
             isSorting = false; document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = false;
+        }
+
+        async function heapSort() {
+            const n = array.length;
+            log("Building max heap...", "heap");
+            for (let i = Math.floor(n / 2) - 1; i >= 0; i--) await heapify(n, i);
+            log("Max heap built!", "heap");
+            for (let i = n - 1; i > 0; i--) {
+                await swapBars(0, i);
+                [array[0], array[i]] = [array[i], array[0]];
+                [bars[0], bars[i]] = [bars[i], bars[0]];
+                bars[i].classList.add('sorted');
+                await heapify(i, 0);
+            }
+            bars[0].classList.add('sorted');
+        }
+
+        async function heapify(n, i) {
+            let largest = i, left = 2 * i + 1, right = 2 * i + 2;
+            bars[i].classList.add('heapifying'); await sleep(speed / 2);
+            if (left < n && array[left] > array[largest]) largest = left;
+            if (right < n && array[right] > array[largest]) largest = right;
+            if (largest !== i) {
+                log(`Swap ${array[i]} ↔ ${array[largest]}`, 'swap');
+                bars[i].classList.add('swapping'); bars[largest].classList.add('swapping');
+                await swapBars(i, largest);
+                [array[i], array[largest]] = [array[largest], array[i]];
+                [bars[i], bars[largest]] = [bars[largest], bars[i]];
+                bars[i].classList.remove('swapping', 'heapifying');
+                bars[largest].classList.remove('swapping', 'heapifying');
+                await heapify(n, largest);
+            }
+            bars[i].classList.remove('heapifying');
         }
 
         function swapBars(i1, i2) {

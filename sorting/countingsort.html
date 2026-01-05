@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radix Sort Visualizer</title>
+    <title>Counting Sort Visualizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -36,14 +36,14 @@
         .bar {
             position: absolute;
             bottom: 0;
-            background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
+            background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
             border-radius: 6px 6px 0 0;
-            transition: all 0.4s;
-            width: 42px;
+            transition: all 0.3s;
+            width: 32px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
         }
 
         .bar span {
@@ -51,12 +51,17 @@
             bottom: 8px;
             color: white;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 12px;
         }
 
-        .bar.active {
+        .bar.counting {
             background: linear-gradient(180deg, #fcd34d 0%, #f59e0b 100%);
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.5);
+        }
+
+        .bar.placing {
+            background: linear-gradient(180deg, #c084fc 0%, #a855f7 100%);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
         }
 
         .bar.sorted {
@@ -64,31 +69,20 @@
             box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
         }
 
-        .bucket {
+        .count-box {
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 2px solid #475569;
             border-radius: 12px;
-            min-width: 60px;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px 6px;
+            padding: 12px 8px;
+            text-align: center;
+            min-width: 50px;
             transition: all 0.3s;
         }
 
-        .bucket.active {
-            border-color: #a855f7;
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
-        }
-
-        .bucket-item {
-            background: linear-gradient(135deg, #06b6d4, #0891b2);
-            padding: 6px 10px;
-            border-radius: 6px;
-            margin: 3px;
-            font-size: 12px;
-            font-weight: 600;
+        .count-box.active {
+            border-color: #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.05);
         }
 
         .console-box {
@@ -97,8 +91,8 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
         }
 
         .btn-secondary {
@@ -111,7 +105,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+            background: linear-gradient(135deg, #6366f1, #818cf8);
             cursor: pointer;
         }
 
@@ -128,13 +122,13 @@
         }
 
         .status-sorting {
-            background: rgba(14, 165, 233, 0.2);
-            color: #7dd3fc;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
         }
 
         .status-complete {
-            background: rgba(14, 165, 233, 0.2);
-            color: #bae6fd;
+            background: rgba(99, 102, 241, 0.2);
+            color: #c7d2fe;
         }
     </style>
 </head>
@@ -142,8 +136,8 @@
 <body class="text-white">
     <div class="container mx-auto p-6 max-w-6xl">
         <header class="mb-8">
-            <a href="home.html"
-                class="inline-flex items-center gap-2 text-slate-400 hover:text-cyan-400 transition mb-4 text-sm">
+            <a href="../home.html"
+                class="inline-flex items-center gap-2 text-slate-400 hover:text-indigo-400 transition mb-4 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -151,13 +145,13 @@
             </a>
             <div class="flex items-center gap-4">
                 <div
-                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/30">
-                    🎯</div>
+                    class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/30">
+                    🔢</div>
                 <div>
                     <h1
-                        class="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                        Radix Sort</h1>
-                    <p class="text-slate-400 text-sm">Digit-by-digit sorting • O(nk) time complexity</p>
+                        class="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                        Counting Sort</h1>
+                    <p class="text-slate-400 text-sm">Non-comparison sort • O(n + k) time complexity</p>
                 </div>
             </div>
         </header>
@@ -168,14 +162,14 @@
                     <div class="space-y-4">
                         <div>
                             <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Array
-                                    Size</span><span id="sizeValue" class="text-cyan-400 font-mono">8</span></div><input
-                                type="range" id="sizeSlider" min="5" max="12" value="8"
+                                    Size</span><span id="sizeValue" class="text-indigo-400 font-mono">10</span></div>
+                            <input type="range" id="sizeSlider" min="5" max="15" value="10"
                                 class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
                         </div>
                         <div>
                             <div class="flex justify-between text-sm mb-2"><span
                                     class="text-slate-400">Speed</span><span id="speedValue"
-                                    class="text-blue-400 font-mono">Medium</span></div><input type="range"
+                                    class="text-violet-400 font-mono">Medium</span></div><input type="range"
                                 id="speedSlider" min="200" max="1000" value="500"
                                 class="slider w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
                                 style="direction:rtl">
@@ -183,80 +177,73 @@
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <button onclick="generateArray()" id="genBtn"
                                 class="btn-secondary py-2.5 rounded-xl font-semibold text-sm">Reset</button>
-                            <button onclick="startRadixSort()" id="sortBtn"
+                            <button onclick="startCountingSort()" id="sortBtn"
                                 class="btn-primary py-2.5 rounded-xl font-semibold text-sm">▶ Start</button>
                         </div>
                     </div>
-                    <div class="mt-5 pt-4 border-t border-slate-700/50">
-                        <div class="flex justify-between text-sm mb-2"><span class="text-slate-400">Status</span><span
-                                id="statusBadge" class="status-badge status-ready">Ready</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-slate-400">Digit</span><span
-                                id="digitBadge" class="text-purple-400 font-mono">-</span></div>
-                    </div>
+                    <div class="mt-5 pt-4 border-t border-slate-700/50 flex items-center justify-between"><span
+                            class="text-slate-400 text-sm">Status</span><span id="statusBadge"
+                            class="status-badge status-ready">Ready</span></div>
                 </div>
                 <div class="glass-card rounded-2xl p-5">
                     <h2 class="text-lg font-semibold mb-3"><span class="text-green-400">›_</span> Console</h2>
                     <div id="consoleOutput"
-                        class="console-box h-32 overflow-y-auto p-3 rounded-xl text-xs text-green-400 font-mono"></div>
+                        class="console-box h-36 overflow-y-auto p-3 rounded-xl text-xs text-green-400 font-mono"></div>
                 </div>
             </div>
             <div class="lg:col-span-9 space-y-5">
                 <div class="glass-card rounded-2xl p-5">
-                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Array</h3>
+                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Input Array</h3>
                     <div id="arrayContainer" class="sort-container w-full"></div>
                 </div>
                 <div class="glass-card rounded-2xl p-5">
-                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Buckets (0-9)</h3>
-                    <div id="bucketContainer" class="flex gap-3 justify-center flex-wrap"></div>
+                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Count Array</h3>
+                    <div id="countContainer" class="flex gap-3 flex-wrap justify-center py-4"></div>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <h3 class="text-sm font-semibold text-slate-400 mb-3">Output Array</h3>
+                    <div id="outputContainer" class="sort-container w-full"></div>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        const container = document.getElementById('arrayContainer'), bucketCont = document.getElementById('bucketContainer'), consoleOutput = document.getElementById('consoleOutput');
-        const sizeSlider = document.getElementById('sizeSlider'), speedSlider = document.getElementById('speedSlider');
-        const statusBadge = document.getElementById('statusBadge'), digitBadge = document.getElementById('digitBadge'), sizeValue = document.getElementById('sizeValue'), speedValue = document.getElementById('speedValue');
+        const container = document.getElementById('arrayContainer'), countCont = document.getElementById('countContainer'), outputCont = document.getElementById('outputContainer');
+        const consoleOutput = document.getElementById('consoleOutput'), sizeSlider = document.getElementById('sizeSlider'), speedSlider = document.getElementById('speedSlider');
+        const statusBadge = document.getElementById('statusBadge'), sizeValue = document.getElementById('sizeValue'), speedValue = document.getElementById('speedValue');
         let array = [], bars = [], isSorting = false, speed = 500;
-        const BAR_WIDTH = 44, BAR_GAP = 8;
+        const BAR_WIDTH = 32, BAR_GAP = 10, MAX_VAL = 9;
 
         function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
         sizeSlider.addEventListener('input', e => { sizeValue.textContent = e.target.value; if (!isSorting) generateArray(); });
         speedSlider.addEventListener('input', e => { speed = parseInt(e.target.value); speedValue.textContent = speed < 400 ? 'Fast' : speed < 700 ? 'Medium' : 'Slow'; });
-        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'py-1'; if (type === 'digit') l.classList.add('text-purple-300'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
+        function log(msg, type = 'info') { const l = document.createElement('div'); l.className = 'console-line py-1'; if (type === 'count') l.classList.add('text-yellow-300'); l.innerText = '› ' + msg; consoleOutput.appendChild(l); consoleOutput.scrollTop = consoleOutput.scrollHeight; }
         function setStatus(s) { statusBadge.className = 'status-badge'; statusBadge.classList.add(s === 'Ready' ? 'status-ready' : s === 'Sorting' ? 'status-sorting' : 'status-complete'); statusBadge.textContent = s === 'Sorting' ? 'Sorting...' : s; }
-        function ordinal(n) { const s = ["th", "st", "nd", "rd"]; const v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
         function generateArray() {
             if (isSorting) return;
-            container.innerHTML = ''; bucketCont.innerHTML = ''; array = []; bars = [];
+            container.innerHTML = ''; outputCont.innerHTML = ''; countCont.innerHTML = ''; array = []; bars = [];
             const size = parseInt(sizeSlider.value), totalWidth = (size * BAR_WIDTH) + ((size - 1) * BAR_GAP), startLeft = (container.offsetWidth - totalWidth) / 2;
-            for (let i = 0; i < size; i++) { const val = Math.floor(Math.random() * 900) + 100; array.push(val); const bar = document.createElement('div'); bar.classList.add('bar'); bar.style.height = `${(val / 10)}%`; bar.style.left = `${startLeft + i * (BAR_WIDTH + BAR_GAP)}px`; const label = document.createElement('span'); label.innerText = val; bar.appendChild(label); container.appendChild(bar); bars.push(bar); }
-            for (let i = 0; i <= 9; i++) { const bucket = document.createElement('div'); bucket.className = 'bucket'; bucket.id = `bucket-${i}`; bucket.innerHTML = `<div class="text-xs text-slate-500 mb-2 font-bold">${i}</div><div id="bucket-items-${i}" class="flex flex-col items-center"></div>`; bucketCont.appendChild(bucket); }
-            log(`Generated ${size} numbers`); setStatus('Ready'); digitBadge.innerText = '-';
+            for (let i = 0; i < size; i++) { const val = Math.floor(Math.random() * MAX_VAL) + 1; array.push(val); const bar = document.createElement('div'); bar.classList.add('bar'); bar.style.height = `${val * 18}%`; bar.style.left = `${startLeft + i * (BAR_WIDTH + BAR_GAP)}px`; const label = document.createElement('span'); label.innerText = val; bar.appendChild(label); container.appendChild(bar); bars.push(bar); }
+            for (let i = 0; i <= MAX_VAL; i++) { const box = document.createElement('div'); box.className = 'count-box'; box.id = `count-${i}`; box.innerHTML = `<div class="text-xs text-slate-500 mb-1">${i}</div><div class="text-xl font-bold" id="count-val-${i}">0</div>`; countCont.appendChild(box); }
+            log(`Generated array (n=${size})`); setStatus('Ready');
         }
 
-        async function startRadixSort() {
+        async function startCountingSort() {
             if (isSorting) return;
             isSorting = true; setStatus('Sorting');
             document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = true;
-            await radixSort();
-            bars.forEach(b => b.classList.add('sorted'));
+            await countingSort();
             log("Complete!"); setStatus('Complete');
             isSorting = false; document.getElementById('sortBtn').disabled = document.getElementById('genBtn').disabled = false;
         }
 
-        async function radixSort() {
-            const max = Math.max(...array); let exp = 1, pos = 1;
-            while (Math.floor(max / exp) > 0) { digitBadge.innerText = `${ordinal(pos)}`; log(`Sorting by ${ordinal(pos)} digit`, 'digit'); await countingSortByDigit(exp); exp *= 10; pos++; }
-        }
-
-        async function countingSortByDigit(exp) {
-            for (let i = 0; i <= 9; i++) document.getElementById(`bucket-items-${i}`).innerHTML = '';
-            for (let i = 0; i < array.length; i++) { bars[i].classList.add('active'); const digit = Math.floor(array[i] / exp) % 10; document.getElementById(`bucket-${digit}`).classList.add('active'); const item = document.createElement('div'); item.className = 'bucket-item'; item.innerText = array[i]; document.getElementById(`bucket-items-${digit}`).appendChild(item); await sleep(speed); bars[i].classList.remove('active'); document.getElementById(`bucket-${digit}`).classList.remove('active'); }
-            await sleep(speed);
-            let idx = 0; const newArr = [], totalWidth = (array.length * BAR_WIDTH) + ((array.length - 1) * BAR_GAP), startLeft = (container.offsetWidth - totalWidth) / 2;
-            for (let d = 0; d <= 9; d++) { const items = document.getElementById(`bucket-items-${d}`).children; for (let item of items) { const val = parseInt(item.innerText); newArr.push(val); bars[idx].querySelector('span').innerText = val; bars[idx].style.height = `${(val / 10)}%`; bars[idx].style.left = `${startLeft + idx * (BAR_WIDTH + BAR_GAP)}px`; idx++; } }
-            array = newArr; await sleep(speed);
+        async function countingSort() {
+            const count = new Array(MAX_VAL + 1).fill(0);
+            for (let i = 0; i < array.length; i++) { bars[i].classList.add('counting'); count[array[i]]++; document.getElementById(`count-${array[i]}`).classList.add('active'); document.getElementById(`count-val-${array[i]}`).innerText = count[array[i]]; log(`Count[${array[i]}] = ${count[array[i]]}`, 'count'); await sleep(speed); bars[i].classList.remove('counting'); document.getElementById(`count-${array[i]}`).classList.remove('active'); }
+            for (let i = 1; i <= MAX_VAL; i++) { count[i] += count[i - 1]; document.getElementById(`count-val-${i}`).innerText = count[i]; document.getElementById(`count-${i}`).classList.add('active'); await sleep(speed / 2); document.getElementById(`count-${i}`).classList.remove('active'); }
+            const totalWidth = (array.length * BAR_WIDTH) + ((array.length - 1) * BAR_GAP), startLeft = (outputCont.offsetWidth - totalWidth) / 2;
+            for (let i = array.length - 1; i >= 0; i--) { bars[i].classList.add('placing'); const pos = count[array[i]] - 1; count[array[i]]--; document.getElementById(`count-val-${array[i]}`).innerText = count[array[i]]; const bar = document.createElement('div'); bar.classList.add('bar', 'sorted'); bar.style.height = `${array[i] * 18}%`; bar.style.left = `${startLeft + pos * (BAR_WIDTH + BAR_GAP)}px`; const label = document.createElement('span'); label.innerText = array[i]; bar.appendChild(label); outputCont.appendChild(bar); await sleep(speed); bars[i].classList.remove('placing'); }
         }
 
         window.addEventListener('resize', () => { if (!isSorting) generateArray(); });
