@@ -1,0 +1,23 @@
+# Netlify configuration file
+
+[build]
+  # No build command needed - static HTML files
+  publish = "."
+
+# Redirects for clean URLs
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+
+# Custom headers for better caching
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
